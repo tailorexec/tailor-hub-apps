@@ -197,21 +197,16 @@ export const Route = createFileRoute("/api/generate-resume")({
           }
 
           // 3) Build the .docx
-          // Fetch logo + pin bytes (best-effort) for docx header
+          // Fetch logo bytes (best-effort) for docx header
           let logoBytes: Uint8Array | null = null;
-          let pinBytes: Uint8Array | null = null;
           try {
             const origin = new URL(request.url).origin;
-            const [lr, pr] = await Promise.all([
-              fetch(new URL(logoUrl, origin).toString()),
-              fetch(new URL(pinUrl, origin).toString()),
-            ]);
+            const lr = await fetch(new URL(logoUrl, origin).toString());
             if (lr.ok) logoBytes = new Uint8Array(await lr.arrayBuffer());
-            if (pr.ok) pinBytes = new Uint8Array(await pr.arrayBuffer());
           } catch (e) {
-            console.error("logo/pin fetch failed:", e);
+            console.error("logo fetch failed:", e);
           }
-          const docx = buildDocx(parsed, logoBytes, pinBytes);
+          const docx = buildDocx(parsed, logoBytes);
           const blob = await Packer.toBlob(docx);
           const arrayBuffer = await blob.arrayBuffer();
 
