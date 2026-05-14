@@ -364,7 +364,7 @@ function buildDocx(
   }
 
   // Pacote de Remuneração (sempre exibido)
-  children.push(sectionHeading("Pacote de Remuneração (atual ou última)"));
+  children.push(sectionHeading("Pacote de Remuneração (atual ou última)", TAILOR_RED_DARK));
   const compensationTemplate =
     "R$ XX.000,00 (CLT ou PJ) + PLR até XX salários (última: XX salários) + Previdência Privada de X:X até X% + Vale Refeição de R$ XX + Vale Alimentação de R$ XX + Assistência Médica XXX + Assistência Odontológica XXX + Veículo XXX.";
   children.push(
@@ -377,7 +377,7 @@ function buildDocx(
   );
 
   // Formação Acadêmica (sempre exibida)
-  children.push(sectionHeading("Formação Acadêmica"));
+  children.push(sectionHeading("Formação Acadêmica", TAILOR_RED_DARK));
   if (data.education?.length) {
     for (const ed of data.education) {
       if (ed?.trim()) children.push(bullet(ed.trim()));
@@ -392,7 +392,7 @@ function buildDocx(
   }
 
   // Experiência Profissional (sempre exibida)
-  children.push(sectionHeading("Experiência Profissional"));
+  children.push(sectionHeading("Experiência Profissional", TAILOR_RED_DARK));
   if (data.experience?.length) {
     let prevCompany = "";
     for (const exp of data.experience) {
