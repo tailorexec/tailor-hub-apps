@@ -445,24 +445,41 @@ function buildDocx(
             margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 },
           },
         },
-        headers: logoBytes
-          ? {
-              default: new Header({
-                children: [
-                  new Paragraph({
-                    alignment: AlignmentType.RIGHT,
-                    children: [
-                      new ImageRun({
-                        data: logoBytes,
-                        transformation: { width: 110, height: 32 },
-                        type: "png",
-                      }),
-                    ],
-                  }),
-                ],
-              }),
-            }
-          : undefined,
+        headers:
+          logoBytes || pinBytes
+            ? {
+                default: new Header({
+                  children: [
+                    new Paragraph({
+                      tabStops: [
+                        { type: TabStopType.RIGHT, position: TabStopPosition.MAX },
+                      ],
+                      children: [
+                        ...(pinBytes
+                          ? [
+                              new ImageRun({
+                                data: pinBytes,
+                                transformation: { width: 18, height: 26 },
+                                type: "png",
+                              }),
+                            ]
+                          : []),
+                        new TextRun({ text: "\t" }),
+                        ...(logoBytes
+                          ? [
+                              new ImageRun({
+                                data: logoBytes,
+                                transformation: { width: 110, height: 32 },
+                                type: "png",
+                              }),
+                            ]
+                          : []),
+                      ],
+                    }),
+                  ],
+                }),
+              }
+            : undefined,
         children,
       },
     ],
