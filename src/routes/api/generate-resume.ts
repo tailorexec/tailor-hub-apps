@@ -433,6 +433,24 @@ function buildDocx(data: ResumeData, logoBytes: Uint8Array | null): Document {
             margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 },
           },
         },
+        headers: logoBytes
+          ? {
+              default: new Header({
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.RIGHT,
+                    children: [
+                      new ImageRun({
+                        data: logoBytes,
+                        transformation: { width: 110, height: 32 },
+                        type: "png",
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            }
+          : undefined,
         children,
       },
     ],
