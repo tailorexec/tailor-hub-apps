@@ -90,6 +90,14 @@ function Index() {
       if (downloadUrlRef.current) URL.revokeObjectURL(downloadUrlRef.current);
       downloadUrlRef.current = URL.createObjectURL(blob);
 
+      const used = parseInt(response.headers.get("X-Usage-Used") ?? "", 10);
+      const limit = parseInt(response.headers.get("X-Usage-Limit") ?? "", 10);
+      if (!Number.isNaN(used) && !Number.isNaN(limit)) {
+        setUsage({ used, limit });
+      } else {
+        fetchUsage();
+      }
+
       setStatus("success");
     } catch (e) {
       console.error("Generate error:", e);
@@ -97,6 +105,7 @@ function Index() {
       setErrorMsg(msg);
       setStatus("error");
       toast({ title: "Erro ao gerar currículo", description: msg, variant: "destructive" });
+      fetchUsage();
     }
   };
 
