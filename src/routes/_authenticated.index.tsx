@@ -21,13 +21,31 @@ function Index() {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [usage, setUsage] = useState<{ used: number; limit: number } | null>(null);
   const downloadUrlRef = useRef<string | null>(null);
   const downloadNameRef = useRef<string>("Candidato_CV_Tailor.docx");
 
-  // Refresh profile on mount in case admin just approved it
+  const fetchUsage = async () => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) return;
+      const res = await fetch("/api/usage", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const j = (await res.json()) as { used: number; limit: number };
+        setUsage(j);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
   useEffect(() => {
-    // initial state from context is fine
-  }, []);
+    if (profile?.status === "approved") fetchUsage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.status]);
 
   const toTailorFilename = (rawName?: string | null) => {
     const decoded = rawName ? decodeURIComponent(rawName.replace(/^"|"$/g, "").trim()) : "";
@@ -72,6 +90,14 @@ function Index() {
       if (downloadUrlRef.current) URL.revokeObjectURL(downloadUrlRef.current);
       downloadUrlRef.current = URL.createObjectURL(blob);
 
+      const used = parseInt(response.headers.get("X-Usage-Used") ?? "", 10);
+      const limit = parseInt(response.headers.get("X-Usage-Limit") ?? "", 10);
+      if (!Number.isNaN(used) && !Number.isNaN(limit)) {
+        setUsage({ used, limit });
+      } else {
+        fetchUsage();
+      }
+
       setStatus("success");
     } catch (e) {
       console.error("Generate error:", e);
@@ -79,6 +105,7 @@ function Index() {
       setErrorMsg(msg);
       setStatus("error");
       toast({ title: "Erro ao gerar currículo", description: msg, variant: "destructive" });
+      fetchUsage();
     }
   };
 
@@ -155,14 +182,47 @@ function Index() {
         <div className="tailor-card">
           <div className="tailor-card-title">02 — GERAR CURRÍCULO</div>
 
+          {usage && (
+            <div className="flex items-center justify-between text-xs mb-3 px-1">
+              <span className="text-muted-foreground">Uso nas últimas 24h</span>
+              <span
+                className={`font-bold ${
+                  usage.used >= usage.limit ? "text-[#8a1a1a]" : "text-foreground"
+                }`}
+              >
+                {usage.used} / {usage.limit}
+              </span>
+            </div>
+          )}
+
           <button
-            disabled={!file || status === "loading"}
+            disabled={
+              !file ||
+              status === "loading" ||
+              (usage ? usage.used >= usage.limit : false)
+            }
             onClick={handleGenerate}
             className="flex items-center justify-center gap-2.5 w-full py-4 px-8 bg-primary text-primary-foreground font-bold text-sm tracking-wider uppercase rounded-[10px] border-none cursor-pointer transition-all hover:brightness-90 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed mt-2"
           >
             <Sparkles className="w-[18px] h-[18px]" />
             Gerar Currículo Padrão Tailor
           </button>
+
+          {usage && usage.used >= usage.limit && (
+            <div className="flex items-start gap-3.5 rounded-[10px] p-5 mt-5 bg-[#fff5f5] border-[1.5px] border-[#f09090]">
+              <div className="w-8 h-8 rounded-full bg-[#f09090] flex items-center justify-center shrink-0">
+                <AlertCircle className="w-4 h-4 text-card" />
+              </div>
+              <div>
+                <p className="text-[13px] font-bold text-[#8a1a1a] mb-0.5">
+                  Limite diário atingido
+                </p>
+                <p className="text-xs text-gray-700 leading-relaxed">
+                  Você atingiu o limite de {usage.limit} gerações nas últimas 24h. Contate o administrador.
+                </p>
+              </div>
+            </div>
+          )}
 
           {status === "loading" && (
             <div className="flex items-start gap-3.5 rounded-[10px] p-5 mt-5 bg-[#fffbf0] border-[1.5px] border-[#f0d060]">
