@@ -11,48 +11,50 @@ import {
   BorderStyle,
   Header,
   ImageRun,
-  TabStopType,
-  TabStopPosition,
 } from "docx";
 import logoUrl from "@/assets/tailor-logo.png";
 
 
 interface ResumeData {
   name: string;
-  title?: string;
-  contact?: { email?: string; phone?: string; location?: string; links?: string[] };
-  summary?: string;
+  location?: string;
+  compensation?: string;
+  education?: string[];
   experience?: Array<{
-    role: string;
     company: string;
     period?: string;
+    role: string;
     location?: string;
     bullets?: string[];
   }>;
-  education?: Array<{ degree: string; institution: string; period?: string }>;
-  skills?: string[];
   languages?: string[];
-  certifications?: string[];
+  courses?: string[];
 }
 
-const SYSTEM_PROMPT = `Você é um especialista em recrutamento que estrutura currículos no padrão "Tailor".
+const SYSTEM_PROMPT = `Você é um especialista em recrutamento da consultoria "Tailor" e estrutura currículos no padrão Tailor.
 Receba o texto bruto extraído de um PDF de currículo e devolva APENAS um JSON válido (sem markdown, sem comentários) seguindo este schema:
 
 {
-  "name": string,
-  "title": string,
-  "contact": { "email": string, "phone": string, "location": string, "links": string[] },
-  "summary": string,
-  "experience": [{ "role": string, "company": string, "period": string, "location": string, "bullets": string[] }],
-  "education": [{ "degree": string, "institution": string, "period": string }],
-  "skills": string[],
-  "languages": string[],
-  "certifications": string[]
+  "name": string,                       // nome completo do candidato (será exibido em CAIXA ALTA)
+  "location": string,                   // cidade – UF (ex: "Manaus – AM")
+  "compensation": string,               // pacote de remuneração ATUAL em um único parágrafo. Ex: "R$ 15.000,00 (CLT) + PLR até 3 salários (última: 3 salários) + Vale Alimentação de R$ 1.100,00 + Assistência Médica + Assistência Odontológica + Wellhub". Se não houver, devolva "".
+  "education": string[],                // cada item é uma linha de formação acadêmica (ex: "Pós-Graduação em ...", "MBA em ...", "Graduação em ...")
+  "experience": [{
+    "company": string,                  // nome da empresa
+    "period": string,                   // período total na empresa (ex: "Set/2013 – Out/2024" ou "Out/2024 – Atual")
+    "role": string,                     // cargo. Se houver vários cargos na mesma empresa, crie UMA entrada por cargo, repetindo a empresa, e inclua o período do cargo entre parênteses no campo "role" (ex: "Coordenadora Business Partner RH (Jun/2023 – Out/2024)")
+    "location": string,                 // cidade, UF (ex: "Manaus, AM")
+    "bullets": string[]                 // responsabilidades/realizações
+  }],
+  "languages": string[],                // ex: ["Inglês Intermediário – Informado pela candidata"]
+  "courses": string[]                   // cursos e certificações
 }
 
-Regras:
-- Escreva tudo em português do Brasil quando possível.
-- Reescreva bullets de experiência de forma concisa e orientada a resultados (verbo no passado + impacto).
+Regras de formatação OBRIGATÓRIAS (padrão Tailor):
+- Escreva tudo em português do Brasil.
+- Reescreva os bullets de experiência de forma concisa e orientada a resultados, começando com VERBO NO INFINITIVO (ex: "Coordenar...", "Implantar...", "Desenvolver...", "Gerir...").
+- TODOS os bullets devem terminar com ponto e vírgula ";", exceto o ÚLTIMO bullet de cada cargo, que termina com ponto ".".
+- Palavras em inglês ou estrangeirismos dentro do texto devem ser marcadas com asteriscos para itálico, ex: *Business Partner*, *performance*, *feedback*, *turnover*, *endomarketing*, *compliance*, *LMS*, *headcount*. NÃO marque siglas comuns em português.
 - Não invente informações. Se um campo não existir, devolva string vazia ou array vazio.
 - Não inclua nenhum texto fora do JSON.`;
 
@@ -165,7 +167,7 @@ export const Route = createFileRoute("/api/generate-resume")({
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              model: "google/gemini-2.5-flash-lite",
+              model: "google/gemini-2.5-flash",
               messages: [
                 { role: "system", content: SYSTEM_PROMPT },
                 { role: "user", content: pdfText.slice(0, 60000) },
@@ -258,12 +260,39 @@ const PRIMARY = "1F2937"; // slate-800
 const MUTED = "6B7280";
 const TAILOR_RED = "E63946"; // light Tailor red
 
-
-function p(text: string, opts: { bold?: boolean; size?: number; color?: string } = {}) {
-  return new Paragraph({
-    children: [new TextRun({ text, bold: opts.bold, size: opts.size, color: opts.color, font: "Calibri" })],
-    spacing: { after: 80 },
-  });
+// Convert text with *italic* markers into TextRun[] preserving italics.
+function runs(
+  text: string,
+  base: { bold?: boolean; size?: number; color?: string } = {},
+): TextRun[] {
+  const out: TextRun[] = [];
+  const parts = text.split(/(\*[^*]+\*)/g);
+  for (const part of parts) {
+    if (!part) continue;
+    if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
+      out.push(
+        new TextRun({
+          text: part.slice(1, -1),
+          italics: true,
+          bold: base.bold,
+          size: base.size,
+          color: base.color,
+          font: "Calibri",
+        }),
+      );
+    } else {
+      out.push(
+        new TextRun({
+          text: part,
+          bold: base.bold,
+          size: base.size,
+          color: base.color,
+          font: "Calibri",
+        }),
+      );
+    }
+  }
+  return out;
 }
 
 function sectionHeading(text: string) {
@@ -281,8 +310,14 @@ function bullet(text: string) {
   return new Paragraph({
     numbering: { reference: "bullets", level: 0 },
     spacing: { after: 60 },
-    children: [new TextRun({ text, size: 22, font: "Calibri" })],
+    children: runs(text, { size: 22 }),
   });
+}
+
+// Ensure bullets end with ; except last with .
+function normalizeBullets(items: string[]): string[] {
+  const cleaned = items.map((b) => b.trim().replace(/[.;]+$/, "")).filter(Boolean);
+  return cleaned.map((b, i) => `${b}${i === cleaned.length - 1 ? "." : ";"}`);
 }
 
 function buildDocx(
@@ -291,16 +326,16 @@ function buildDocx(
 ): Document {
   const children: Paragraph[] = [];
 
-  // Header
+  // Name (uppercase)
   children.push(
     new Paragraph({
       alignment: AlignmentType.LEFT,
       spacing: { after: 60 },
       children: [
         new TextRun({
-          text: data.name || "Candidato",
+          text: (data.name || "Candidato").toUpperCase(),
           bold: true,
-          size: 40,
+          size: 36,
           color: PRIMARY,
           font: "Calibri",
         }),
@@ -308,109 +343,90 @@ function buildDocx(
     }),
   );
 
-  if (data.title) {
+  if (data.location) {
+    children.push(
+      new Paragraph({
+        spacing: { after: 160 },
+        children: [new TextRun({ text: data.location, size: 22, color: MUTED, font: "Calibri" })],
+      }),
+    );
+  }
+
+  if (data.compensation) {
+    children.push(sectionHeading("Pacote de Remuneração (Atual)"));
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: [new TextRun({ text: data.title, size: 24, color: MUTED, font: "Calibri" })],
+        children: runs(data.compensation, { size: 22 }),
       }),
     );
-  }
-
-  const contactBits: string[] = [];
-  if (data.contact?.email) contactBits.push(data.contact.email);
-  if (data.contact?.phone) contactBits.push(data.contact.phone);
-  if (data.contact?.location) contactBits.push(data.contact.location);
-  if (data.contact?.links?.length) contactBits.push(...data.contact.links);
-  if (contactBits.length) {
-    children.push(
-      new Paragraph({
-        spacing: { after: 120 },
-        children: [
-          new TextRun({ text: contactBits.join("  •  "), size: 20, color: MUTED, font: "Calibri" }),
-        ],
-      }),
-    );
-  }
-
-  if (data.summary) {
-    children.push(sectionHeading("Resumo"));
-    children.push(p(data.summary, { size: 22 }));
-  }
-
-  if (data.experience?.length) {
-    children.push(sectionHeading("Experiência"));
-    for (const exp of data.experience) {
-      children.push(
-        new Paragraph({
-          spacing: { before: 120, after: 20 },
-          children: [
-            new TextRun({ text: exp.role || "", bold: true, size: 24, font: "Calibri" }),
-            new TextRun({
-              text: exp.company ? `  —  ${exp.company}` : "",
-              size: 24,
-              color: MUTED,
-              font: "Calibri",
-            }),
-          ],
-        }),
-      );
-      const meta = [exp.period, exp.location].filter(Boolean).join(" • ");
-      if (meta) {
-        children.push(
-          new Paragraph({
-            spacing: { after: 80 },
-            children: [new TextRun({ text: meta, italics: true, size: 20, color: MUTED, font: "Calibri" })],
-          }),
-        );
-      }
-      for (const b of exp.bullets ?? []) {
-        if (b?.trim()) children.push(bullet(b.trim()));
-      }
-    }
   }
 
   if (data.education?.length) {
-    children.push(sectionHeading("Formação"));
+    children.push(sectionHeading("Formação Acadêmica"));
     for (const ed of data.education) {
-      children.push(
-        new Paragraph({
-          spacing: { after: 40 },
-          children: [
-            new TextRun({ text: ed.degree || "", bold: true, size: 22, font: "Calibri" }),
-            new TextRun({
-              text: ed.institution ? `  —  ${ed.institution}` : "",
-              size: 22,
-              color: MUTED,
-              font: "Calibri",
-            }),
-          ],
-        }),
-      );
-      if (ed.period) {
-        children.push(
-          new Paragraph({
-            spacing: { after: 80 },
-            children: [new TextRun({ text: ed.period, italics: true, size: 20, color: MUTED, font: "Calibri" })],
-          }),
-        );
-      }
+      if (ed?.trim()) children.push(bullet(ed.trim()));
     }
   }
 
-  if (data.skills?.length) {
-    children.push(sectionHeading("Habilidades"));
-    children.push(p(data.skills.join(" • "), { size: 22 }));
+  if (data.experience?.length) {
+    children.push(sectionHeading("Experiência Profissional"));
+    for (const exp of data.experience) {
+      // Company + period
+      children.push(
+        new Paragraph({
+          spacing: { before: 160, after: 20 },
+          children: [
+            new TextRun({ text: exp.company || "", bold: true, size: 24, font: "Calibri" }),
+            ...(exp.period
+              ? [
+                  new TextRun({
+                    text: `   ${exp.period}`,
+                    size: 22,
+                    color: MUTED,
+                    font: "Calibri",
+                  }),
+                ]
+              : []),
+          ],
+        }),
+      );
+      // Role
+      if (exp.role) {
+        children.push(
+          new Paragraph({
+            spacing: { after: 20 },
+            children: runs(exp.role, { bold: true, size: 22 }),
+          }),
+        );
+      }
+      // Location
+      if (exp.location) {
+        children.push(
+          new Paragraph({
+            spacing: { after: 80 },
+            children: [
+              new TextRun({ text: exp.location, italics: true, size: 20, color: MUTED, font: "Calibri" }),
+            ],
+          }),
+        );
+      }
+      const bullets = normalizeBullets(exp.bullets ?? []);
+      for (const b of bullets) children.push(bullet(b));
+    }
   }
 
   if (data.languages?.length) {
     children.push(sectionHeading("Idiomas"));
-    children.push(p(data.languages.join(" • "), { size: 22 }));
+    for (const l of data.languages) {
+      if (l?.trim()) children.push(bullet(l.trim()));
+    }
   }
 
-  if (data.certifications?.length) {
-    children.push(sectionHeading("Certificações"));
-    for (const c of data.certifications) children.push(bullet(c));
+  if (data.courses?.length) {
+    children.push(sectionHeading("Cursos"));
+    const courseItems = normalizeBullets(data.courses);
+    for (const c of courseItems) children.push(bullet(c));
   }
 
   return new Document({
