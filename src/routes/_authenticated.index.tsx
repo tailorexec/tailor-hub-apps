@@ -9,7 +9,7 @@ import { toast } from "@/hooks/use-toast";
 
 type Status = "idle" | "loading" | "success" | "error";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   component: Index,
 });
 
