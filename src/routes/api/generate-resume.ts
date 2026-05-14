@@ -9,7 +9,10 @@ import {
   AlignmentType,
   LevelFormat,
   BorderStyle,
+  Header,
+  ImageRun,
 } from "docx";
+import logoUrl from "@/assets/tailor-logo.png";
 
 interface ResumeData {
   name: string;
@@ -191,7 +194,16 @@ export const Route = createFileRoute("/api/generate-resume")({
           }
 
           // 3) Build the .docx
-          const docx = buildDocx(parsed);
+          // Fetch logo bytes (best-effort) for docx header
+          let logoBytes: Uint8Array | null = null;
+          try {
+            const origin = new URL(request.url).origin;
+            const lr = await fetch(new URL(logoUrl, origin).toString());
+            if (lr.ok) logoBytes = new Uint8Array(await lr.arrayBuffer());
+          } catch (e) {
+            console.error("logo fetch failed:", e);
+          }
+          const docx = buildDocx(parsed, logoBytes);
           const blob = await Packer.toBlob(docx);
           const arrayBuffer = await blob.arrayBuffer();
 
@@ -241,6 +253,8 @@ export const Route = createFileRoute("/api/generate-resume")({
 
 const PRIMARY = "1F2937"; // slate-800
 const MUTED = "6B7280";
+const TAILOR_RED = "E63946"; // light Tailor red
+
 
 function p(text: string, opts: { bold?: boolean; size?: number; color?: string } = {}) {
   return new Paragraph({
@@ -253,9 +267,9 @@ function sectionHeading(text: string) {
   return new Paragraph({
     heading: HeadingLevel.HEADING_2,
     spacing: { before: 280, after: 120 },
-    border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: PRIMARY, space: 2 } },
+    border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: TAILOR_RED, space: 2 } },
     children: [
-      new TextRun({ text: text.toUpperCase(), bold: true, size: 24, color: PRIMARY, font: "Calibri" }),
+      new TextRun({ text: text.toUpperCase(), bold: true, size: 24, color: TAILOR_RED, font: "Calibri" }),
     ],
   });
 }
@@ -268,7 +282,7 @@ function bullet(text: string) {
   });
 }
 
-function buildDocx(data: ResumeData): Document {
+function buildDocx(data: ResumeData, logoBytes: Uint8Array | null): Document {
   const children: Paragraph[] = [];
 
   // Header
@@ -419,6 +433,24 @@ function buildDocx(data: ResumeData): Document {
             margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 },
           },
         },
+        headers: logoBytes
+          ? {
+              default: new Header({
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.RIGHT,
+                    children: [
+                      new ImageRun({
+                        data: logoBytes,
+                        transformation: { width: 110, height: 32 },
+                        type: "png",
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            }
+          : undefined,
         children,
       },
     ],
