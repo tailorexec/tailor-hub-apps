@@ -101,6 +101,34 @@ export const Route = createFileRoute("/api/generate-resume")({
           }
           // --- end auth check ---
 
+          // --- Daily limit check (15 per user, UTC day) ---
+          const DAILY_LIMIT = 15;
+          const sinceIso = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+          const countRes = await fetch(
+            `${supabaseUrl}/rest/v1/generations?user_id=eq.${userId}&created_at=gte.${sinceIso}&select=id`,
+            {
+              headers: {
+                apikey: serviceKey,
+                Authorization: `Bearer ${serviceKey}`,
+                Accept: "application/json",
+                Prefer: "count=exact",
+              },
+            },
+          );
+          const contentRange = countRes.headers.get("content-range") ?? "0-0/0";
+          const usedToday = parseInt(contentRange.split("/")[1] ?? "0", 10) || 0;
+          if (usedToday >= DAILY_LIMIT) {
+            return Response.json(
+              {
+                error: `Você atingiu o limite diário de ${DAILY_LIMIT} gerações. Contate o administrador.`,
+                used: usedToday,
+                limit: DAILY_LIMIT,
+              },
+              { status: 429, headers: { "X-Usage-Used": String(usedToday), "X-Usage-Limit": String(DAILY_LIMIT) } },
+            );
+          }
+          // --- end limit check ---
+
           const formData = await request.formData();
           const pdf = formData.get("pdf");
 
@@ -170,6 +198,24 @@ export const Route = createFileRoute("/api/generate-resume")({
           const baseName = (parsed.name || "Candidato").trim().replace(/\s+/g, "_");
           const filename = `${baseName}_CV_Tailor.docx`;
 
+          // Record usage (best-effort)
+          let newUsed = usedToday + 1;
+          try {
+            await fetch(`${supabaseUrl}/rest/v1/generations`, {
+              method: "POST",
+              headers: {
+                apikey: serviceKey,
+                Authorization: `Bearer ${serviceKey}`,
+                "Content-Type": "application/json",
+                Prefer: "return=minimal",
+              },
+              body: JSON.stringify({ user_id: userId }),
+            });
+          } catch (e) {
+            console.error("Failed to record generation:", e);
+            newUsed = usedToday;
+          }
+
           return new Response(arrayBuffer, {
             status: 200,
             headers: {
@@ -177,6 +223,8 @@ export const Route = createFileRoute("/api/generate-resume")({
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
               "Content-Disposition": `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
               "X-Resume-Filename": filename,
+              "X-Usage-Used": String(newUsed),
+              "X-Usage-Limit": String(DAILY_LIMIT),
             },
           });
         } catch (e) {

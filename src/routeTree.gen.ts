@@ -13,6 +13,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated.index'
+import { Route as ApiUsageRouteImport } from './routes/api/usage'
 import { Route as ApiGenerateResumeRouteImport } from './routes/api/generate-resume'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 
@@ -35,6 +36,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const ApiUsageRoute = ApiUsageRouteImport.update({
+  id: '/api/usage',
+  path: '/api/usage',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGenerateResumeRoute = ApiGenerateResumeRouteImport.update({
   id: '/api/generate-resume',
   path: '/api/generate-resume',
@@ -52,12 +58,14 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/api/generate-resume': typeof ApiGenerateResumeRoute
+  '/api/usage': typeof ApiUsageRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/api/generate-resume': typeof ApiGenerateResumeRoute
+  '/api/usage': typeof ApiUsageRoute
   '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
@@ -67,13 +75,26 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/api/generate-resume': typeof ApiGenerateResumeRoute
+  '/api/usage': typeof ApiUsageRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/signup' | '/admin' | '/api/generate-resume'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/admin'
+    | '/api/generate-resume'
+    | '/api/usage'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/signup' | '/admin' | '/api/generate-resume' | '/'
+  to:
+    | '/login'
+    | '/signup'
+    | '/admin'
+    | '/api/generate-resume'
+    | '/api/usage'
+    | '/'
   id:
     | '__root__'
     | '/_authenticated'
@@ -81,6 +102,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_authenticated/admin'
     | '/api/generate-resume'
+    | '/api/usage'
     | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
@@ -89,6 +111,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   ApiGenerateResumeRoute: typeof ApiGenerateResumeRoute
+  ApiUsageRoute: typeof ApiUsageRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -120,6 +143,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/api/usage': {
+      id: '/api/usage'
+      path: '/api/usage'
+      fullPath: '/api/usage'
+      preLoaderRoute: typeof ApiUsageRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/generate-resume': {
       id: '/api/generate-resume'
@@ -157,7 +187,18 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   ApiGenerateResumeRoute: ApiGenerateResumeRoute,
+  ApiUsageRoute: ApiUsageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
