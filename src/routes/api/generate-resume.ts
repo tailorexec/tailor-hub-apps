@@ -392,30 +392,34 @@ function buildDocx(
   // Experiência Profissional (sempre exibida)
   children.push(sectionHeading("Experiência Profissional"));
   if (data.experience?.length) {
+    let prevCompany = "";
     for (const exp of data.experience) {
-      // Company + period
-      children.push(
-        new Paragraph({
-          spacing: { before: 160, after: 20 },
-          children: [
-            new TextRun({ text: exp.company || "", bold: true, size: 24, font: "Montserrat" }),
-            ...(exp.period
-              ? [
-                  new TextRun({
-                    text: `   ${exp.period}`,
-                    size: 22,
-                    color: MUTED,
-                    font: "Montserrat",
-                  }),
-                ]
-              : []),
-          ],
-        }),
-      );
+      const sameCompany = (exp.company || "").trim() === prevCompany && prevCompany !== "";
+      // Company + period (skip company line if same as previous entry)
+      if (!sameCompany) {
+        children.push(
+          new Paragraph({
+            spacing: { before: 160, after: 20 },
+            children: [
+              new TextRun({ text: exp.company || "", bold: true, size: 23, font: "Montserrat" }),
+              ...(exp.period
+                ? [
+                    new TextRun({
+                      text: `   ${exp.period}`,
+                      size: 22,
+                      color: MUTED,
+                      font: "Montserrat",
+                    }),
+                  ]
+                : []),
+            ],
+          }),
+        );
+      }
       if (exp.role) {
         children.push(
           new Paragraph({
-            spacing: { after: 20 },
+            spacing: { before: sameCompany ? 120 : 0, after: 20 },
             children: runs(exp.role, { bold: true, size: 22 }),
           }),
         );
@@ -432,6 +436,7 @@ function buildDocx(
       }
       const bullets = normalizeBullets(exp.bullets ?? []);
       for (const b of bullets) children.push(bullet(b));
+      prevCompany = (exp.company || "").trim();
     }
   } else {
     children.push(
