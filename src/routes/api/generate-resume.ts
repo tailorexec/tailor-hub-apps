@@ -310,7 +310,7 @@ function sectionHeading(text: string) {
     spacing: { before: 280, after: 120 },
     border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: TAILOR_RED, space: 2 } },
     children: [
-      new TextRun({ text: text.toUpperCase(), bold: true, size: 24, color: TAILOR_RED, font: "Montserrat" }),
+      new TextRun({ text: text.toUpperCase(), bold: true, size: 23, color: TAILOR_RED, font: "Montserrat" }),
     ],
   });
 }
