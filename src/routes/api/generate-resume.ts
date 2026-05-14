@@ -218,8 +218,12 @@ export const Route = createFileRoute("/api/generate-resume")({
           const blob = await Packer.toBlob(docx);
           const arrayBuffer = await blob.arrayBuffer();
 
-          const baseName = (parsed.name || "Candidato").trim().replace(/\s+/g, "_");
-          const filename = `${baseName}_CV_Tailor.docx`;
+          const nameParts = (parsed.name || "Candidato").trim().split(/\s+/).filter(Boolean);
+          const firstLast =
+            nameParts.length >= 2
+              ? `${nameParts[0]} ${nameParts[nameParts.length - 1]}`
+              : nameParts[0] || "Candidato";
+          const filename = `${firstLast}_CV_Tailor.docx`;
 
           // Record usage (best-effort)
           let newUsed = usedToday + 1;
