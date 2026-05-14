@@ -1,14 +1,13 @@
-import { FileText } from "lucide-react";
+import logo from "@/assets/tailor-logo.png";
 
 const TailorHeader = () => {
   return (
     <header className="w-full border-b border-border bg-card">
-      <div className="max-w-[860px] mx-auto px-4 md:px-6 h-14 flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
-          <FileText className="w-4 h-4" />
-        </div>
-        <span className="font-bold tracking-wide text-foreground">TAILOR</span>
-        <span className="text-xs text-muted-foreground ml-1">CV Generator</span>
+      <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-20 flex items-center justify-between">
+        <img src={logo} alt="Tailor — made for people" className="h-8 md:h-9 w-auto" />
+        <span className="hidden md:inline-flex items-center rounded-full border border-border px-4 py-1.5 text-[11px] font-bold tracking-[0.18em] text-foreground/80">
+          PADRÃO TAILOR · VERSÃO 2026
+        </span>
       </div>
     </header>
   );
