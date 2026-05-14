@@ -82,7 +82,7 @@ function Index() {
       <TailorHeader />
       <TailorHero />
 
-      <main className="flex-1 w-full max-w-[860px] mx-auto px-4 md:px-6 py-12 md:py-12 pb-20">
+      <main className="flex-1 w-full max-w-[760px] mx-auto px-4 md:px-6 py-12 md:py-16 pb-20 -mt-10 relative z-10">
         <div className="tailor-card">
           <div className="tailor-card-title">01 — Currículo do Candidato</div>
           <TailorUploadZone file={file} onFileChange={setFile} />
