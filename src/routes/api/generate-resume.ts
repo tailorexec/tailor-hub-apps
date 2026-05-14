@@ -297,7 +297,6 @@ function runs(
 
 function sectionHeading(text: string) {
   return new Paragraph({
-    heading: HeadingLevel.HEADING_2,
     spacing: { before: 280, after: 120 },
     border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: TAILOR_RED, space: 2 } },
     children: [
