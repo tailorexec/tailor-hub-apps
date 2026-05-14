@@ -55,6 +55,52 @@ export const Route = createFileRoute("/api/generate-resume")({
     handlers: {
       POST: async ({ request }) => {
         try {
+          // --- Auth check: require approved user ---
+          const authHeader = request.headers.get("authorization") ?? "";
+          const token = authHeader.toLowerCase().startsWith("bearer ")
+            ? authHeader.slice(7).trim()
+            : "";
+          if (!token) {
+            return Response.json({ error: "Não autenticado." }, { status: 401 });
+          }
+
+          const supabaseUrl = process.env.SUPABASE_URL;
+          const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+          if (!supabaseUrl || !serviceKey) {
+            return Response.json({ error: "Backend não configurado." }, { status: 500 });
+          }
+
+          const userRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
+            headers: { Authorization: `Bearer ${token}`, apikey: serviceKey },
+          });
+          if (!userRes.ok) {
+            return Response.json({ error: "Sessão inválida." }, { status: 401 });
+          }
+          const userJson = (await userRes.json()) as { id?: string };
+          const userId = userJson.id;
+          if (!userId) {
+            return Response.json({ error: "Sessão inválida." }, { status: 401 });
+          }
+
+          const profRes = await fetch(
+            `${supabaseUrl}/rest/v1/profiles?id=eq.${userId}&select=status`,
+            {
+              headers: {
+                apikey: serviceKey,
+                Authorization: `Bearer ${serviceKey}`,
+                Accept: "application/json",
+              },
+            },
+          );
+          const profArr = (await profRes.json()) as Array<{ status: string }>;
+          if (!Array.isArray(profArr) || profArr[0]?.status !== "approved") {
+            return Response.json(
+              { error: "Cadastro ainda não aprovado por um administrador." },
+              { status: 403 },
+            );
+          }
+          // --- end auth check ---
+
           const formData = await request.formData();
           const pdf = formData.get("pdf");
 
