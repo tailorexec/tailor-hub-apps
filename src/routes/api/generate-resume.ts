@@ -305,12 +305,14 @@ function runs(
   return out;
 }
 
-function sectionHeading(text: string) {
+const TAILOR_RED_DARK = "941010"; // first 3 sections
+
+function sectionHeading(text: string, color: string = TAILOR_RED) {
   return new Paragraph({
     spacing: { before: 280, after: 120 },
-    border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: TAILOR_RED, space: 2 } },
+    border: { bottom: { style: BorderStyle.SINGLE, size: 6, color, space: 2 } },
     children: [
-      new TextRun({ text: text.toUpperCase(), bold: true, size: 23, color: TAILOR_RED, font: "Montserrat" }),
+      new TextRun({ text: text.toUpperCase(), bold: true, size: 23, color, font: "Montserrat" }),
     ],
   });
 }
