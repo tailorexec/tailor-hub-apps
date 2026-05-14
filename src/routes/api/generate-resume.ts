@@ -267,6 +267,60 @@ export const Route = createFileRoute("/api/generate-resume")({
   },
 });
 
+// ---------- JSON parsing ----------
+
+function safeParseResumeJson(raw: string): ResumeData {
+  let s = raw.replace(/```json\s*/gi, "").replace(/```/g, "").trim();
+  const start = s.indexOf("{");
+  const end = s.lastIndexOf("}");
+  if (start !== -1 && end !== -1 && end > start) s = s.slice(start, end + 1);
+
+  const attempts: Array<() => string> = [
+    () => s,
+    () => s.replace(/,\s*([}\]])/g, "$1"), // trailing commas
+    () => {
+      // remove control chars inside strings
+      return s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
+    },
+    () => {
+      // insert missing commas between adjacent strings/objects/arrays
+      let t = s.replace(/,\s*([}\]])/g, "$1");
+      t = t.replace(/("(?:[^"\\]|\\.)*")(\s*)(?=")/g, "$1,$2");
+      t = t.replace(/([}\]])(\s*)(?=["{\[])/g, "$1,$2");
+      return t;
+    },
+    () => {
+      // close unbalanced braces/brackets
+      let t = s.replace(/,\s*([}\]])/g, "$1");
+      let braces = 0, brackets = 0, inStr = false, esc = false;
+      for (const c of t) {
+        if (esc) { esc = false; continue; }
+        if (c === "\\") { esc = true; continue; }
+        if (c === '"') { inStr = !inStr; continue; }
+        if (inStr) continue;
+        if (c === "{") braces++;
+        else if (c === "}") braces--;
+        else if (c === "[") brackets++;
+        else if (c === "]") brackets--;
+      }
+      if (inStr) t += '"';
+      while (brackets-- > 0) t += "]";
+      while (braces-- > 0) t += "}";
+      return t;
+    },
+  ];
+
+  let lastErr: unknown;
+  for (const make of attempts) {
+    try {
+      return JSON.parse(make()) as ResumeData;
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error("JSON parse failed");
+}
+
 // ---------- DOCX builder ----------
 
 const PRIMARY = "1F2937"; // slate-800
