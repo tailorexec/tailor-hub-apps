@@ -288,7 +288,11 @@ function bullet(text: string) {
   });
 }
 
-function buildDocx(data: ResumeData, logoBytes: Uint8Array | null): Document {
+function buildDocx(
+  data: ResumeData,
+  logoBytes: Uint8Array | null,
+  pinBytes: Uint8Array | null,
+): Document {
   const children: Paragraph[] = [];
 
   // Header
