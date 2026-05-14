@@ -253,6 +253,8 @@ export const Route = createFileRoute("/api/generate-resume")({
 
 const PRIMARY = "1F2937"; // slate-800
 const MUTED = "6B7280";
+const TAILOR_RED = "E63946"; // light Tailor red
+
 
 function p(text: string, opts: { bold?: boolean; size?: number; color?: string } = {}) {
   return new Paragraph({
