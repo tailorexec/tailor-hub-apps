@@ -218,8 +218,12 @@ export const Route = createFileRoute("/api/generate-resume")({
           const blob = await Packer.toBlob(docx);
           const arrayBuffer = await blob.arrayBuffer();
 
-          const baseName = (parsed.name || "Candidato").trim().replace(/\s+/g, "_");
-          const filename = `${baseName}_CV_Tailor.docx`;
+          const nameParts = (parsed.name || "Candidato").trim().split(/\s+/).filter(Boolean);
+          const firstLast =
+            nameParts.length >= 2
+              ? `${nameParts[0]} ${nameParts[nameParts.length - 1]}`
+              : nameParts[0] || "Candidato";
+          const filename = `${firstLast}_CV_Tailor.docx`;
 
           // Record usage (best-effort)
           let newUsed = usedToday + 1;
@@ -264,7 +268,7 @@ export const Route = createFileRoute("/api/generate-resume")({
 
 const PRIMARY = "1F2937"; // slate-800
 const MUTED = "6B7280";
-const TAILOR_RED = "E63946"; // light Tailor red
+const TAILOR_RED = "C00000"; // Tailor red
 
 // Convert text with *italic* markers into TextRun[] preserving italics.
 function runs(
@@ -306,7 +310,7 @@ function sectionHeading(text: string) {
     spacing: { before: 280, after: 120 },
     border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: TAILOR_RED, space: 2 } },
     children: [
-      new TextRun({ text: text.toUpperCase(), bold: true, size: 24, color: TAILOR_RED, font: "Montserrat" }),
+      new TextRun({ text: text.toUpperCase(), bold: true, size: 23, color: TAILOR_RED, font: "Montserrat" }),
     ],
   });
 }
@@ -380,7 +384,7 @@ function buildDocx(
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
+        children: [new TextRun({ text: "sem informação", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
       }),
     );
   }
@@ -388,30 +392,34 @@ function buildDocx(
   // Experiência Profissional (sempre exibida)
   children.push(sectionHeading("Experiência Profissional"));
   if (data.experience?.length) {
+    let prevCompany = "";
     for (const exp of data.experience) {
-      // Company + period
-      children.push(
-        new Paragraph({
-          spacing: { before: 160, after: 20 },
-          children: [
-            new TextRun({ text: exp.company || "", bold: true, size: 24, font: "Montserrat" }),
-            ...(exp.period
-              ? [
-                  new TextRun({
-                    text: `   ${exp.period}`,
-                    size: 22,
-                    color: MUTED,
-                    font: "Montserrat",
-                  }),
-                ]
-              : []),
-          ],
-        }),
-      );
+      const sameCompany = (exp.company || "").trim() === prevCompany && prevCompany !== "";
+      // Company + period (skip company line if same as previous entry)
+      if (!sameCompany) {
+        children.push(
+          new Paragraph({
+            spacing: { before: 160, after: 20 },
+            children: [
+              new TextRun({ text: exp.company || "", bold: true, size: 23, font: "Montserrat" }),
+              ...(exp.period
+                ? [
+                    new TextRun({
+                      text: `   ${exp.period}`,
+                      size: 22,
+                      color: MUTED,
+                      font: "Montserrat",
+                    }),
+                  ]
+                : []),
+            ],
+          }),
+        );
+      }
       if (exp.role) {
         children.push(
           new Paragraph({
-            spacing: { after: 20 },
+            spacing: { before: sameCompany ? 120 : 0, after: 20 },
             children: runs(exp.role, { bold: true, size: 22 }),
           }),
         );
@@ -428,12 +436,13 @@ function buildDocx(
       }
       const bullets = normalizeBullets(exp.bullets ?? []);
       for (const b of bullets) children.push(bullet(b));
+      prevCompany = (exp.company || "").trim();
     }
   } else {
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
+        children: [new TextRun({ text: "sem informação", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
       }),
     );
   }
@@ -448,7 +457,7 @@ function buildDocx(
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
+        children: [new TextRun({ text: "sem informação", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
       }),
     );
   }
@@ -462,7 +471,7 @@ function buildDocx(
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
+        children: [new TextRun({ text: "sem informação", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
       }),
     );
   }
