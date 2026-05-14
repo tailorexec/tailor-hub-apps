@@ -5,7 +5,7 @@ import {
   Packer,
   Paragraph,
   TextRun,
-  HeadingLevel,
+  
   AlignmentType,
   LevelFormat,
   BorderStyle,
@@ -297,7 +297,6 @@ function runs(
 
 function sectionHeading(text: string) {
   return new Paragraph({
-    heading: HeadingLevel.HEADING_2,
     spacing: { before: 280, after: 120 },
     border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: TAILOR_RED, space: 2 } },
     children: [
@@ -352,25 +351,35 @@ function buildDocx(
     );
   }
 
-  if (data.compensation) {
-    children.push(sectionHeading("Pacote de Remuneração (Atual)"));
+  // Pacote de Remuneração (sempre exibido)
+  children.push(sectionHeading("Pacote de Remuneração (Atual)"));
+  children.push(
+    new Paragraph({
+      spacing: { after: 80 },
+      children: data.compensation
+        ? runs(data.compensation, { size: 22 })
+        : [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Calibri" })],
+    }),
+  );
+
+  // Formação Acadêmica (sempre exibida)
+  children.push(sectionHeading("Formação Acadêmica"));
+  if (data.education?.length) {
+    for (const ed of data.education) {
+      if (ed?.trim()) children.push(bullet(ed.trim()));
+    }
+  } else {
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: runs(data.compensation, { size: 22 }),
+        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Calibri" })],
       }),
     );
   }
 
-  if (data.education?.length) {
-    children.push(sectionHeading("Formação Acadêmica"));
-    for (const ed of data.education) {
-      if (ed?.trim()) children.push(bullet(ed.trim()));
-    }
-  }
-
+  // Experiência Profissional (sempre exibida)
+  children.push(sectionHeading("Experiência Profissional"));
   if (data.experience?.length) {
-    children.push(sectionHeading("Experiência Profissional"));
     for (const exp of data.experience) {
       // Company + period
       children.push(
@@ -391,7 +400,6 @@ function buildDocx(
           ],
         }),
       );
-      // Role
       if (exp.role) {
         children.push(
           new Paragraph({
@@ -400,7 +408,6 @@ function buildDocx(
           }),
         );
       }
-      // Location
       if (exp.location) {
         children.push(
           new Paragraph({
@@ -414,20 +421,44 @@ function buildDocx(
       const bullets = normalizeBullets(exp.bullets ?? []);
       for (const b of bullets) children.push(bullet(b));
     }
+  } else {
+    children.push(
+      new Paragraph({
+        spacing: { after: 80 },
+        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Calibri" })],
+      }),
+    );
   }
 
+  // Idiomas (sempre exibido)
+  children.push(sectionHeading("Idiomas"));
   if (data.languages?.length) {
-    children.push(sectionHeading("Idiomas"));
     for (const l of data.languages) {
       if (l?.trim()) children.push(bullet(l.trim()));
     }
+  } else {
+    children.push(
+      new Paragraph({
+        spacing: { after: 80 },
+        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Calibri" })],
+      }),
+    );
   }
 
+  // Cursos (sempre exibido)
+  children.push(sectionHeading("Cursos"));
   if (data.courses?.length) {
-    children.push(sectionHeading("Cursos"));
     const courseItems = normalizeBullets(data.courses);
     for (const c of courseItems) children.push(bullet(c));
+  } else {
+    children.push(
+      new Paragraph({
+        spacing: { after: 80 },
+        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Calibri" })],
+      }),
+    );
   }
+
 
   return new Document({
     creator: "Tailor CV Generator",
