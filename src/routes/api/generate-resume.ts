@@ -267,9 +267,9 @@ function sectionHeading(text: string) {
   return new Paragraph({
     heading: HeadingLevel.HEADING_2,
     spacing: { before: 280, after: 120 },
-    border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: PRIMARY, space: 2 } },
+    border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: TAILOR_RED, space: 2 } },
     children: [
-      new TextRun({ text: text.toUpperCase(), bold: true, size: 24, color: PRIMARY, font: "Calibri" }),
+      new TextRun({ text: text.toUpperCase(), bold: true, size: 24, color: TAILOR_RED, font: "Calibri" }),
     ],
   });
 }
