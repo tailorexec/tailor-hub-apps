@@ -15,7 +15,7 @@ import {
   TabStopPosition,
 } from "docx";
 import logoUrl from "@/assets/tailor-logo.png";
-import pinUrl from "@/assets/tailor-pin.png";
+
 
 interface ResumeData {
   name: string;
