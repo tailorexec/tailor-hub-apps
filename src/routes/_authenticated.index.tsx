@@ -21,13 +21,31 @@ function Index() {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [usage, setUsage] = useState<{ used: number; limit: number } | null>(null);
   const downloadUrlRef = useRef<string | null>(null);
   const downloadNameRef = useRef<string>("Candidato_CV_Tailor.docx");
 
-  // Refresh profile on mount in case admin just approved it
+  const fetchUsage = async () => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) return;
+      const res = await fetch("/api/usage", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const j = (await res.json()) as { used: number; limit: number };
+        setUsage(j);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
   useEffect(() => {
-    // initial state from context is fine
-  }, []);
+    if (profile?.status === "approved") fetchUsage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.status]);
 
   const toTailorFilename = (rawName?: string | null) => {
     const decoded = rawName ? decodeURIComponent(rawName.replace(/^"|"$/g, "").trim()) : "";
