@@ -283,7 +283,7 @@ function runs(
           bold: base.bold,
           size: base.size,
           color: base.color,
-          font: "Calibri",
+          font: "Montserrat",
         }),
       );
     } else {
@@ -293,7 +293,7 @@ function runs(
           bold: base.bold,
           size: base.size,
           color: base.color,
-          font: "Calibri",
+          font: "Montserrat",
         }),
       );
     }
@@ -306,7 +306,7 @@ function sectionHeading(text: string) {
     spacing: { before: 280, after: 120 },
     border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: TAILOR_RED, space: 2 } },
     children: [
-      new TextRun({ text: text.toUpperCase(), bold: true, size: 24, color: TAILOR_RED, font: "Calibri" }),
+      new TextRun({ text: text.toUpperCase(), bold: true, size: 24, color: TAILOR_RED, font: "Montserrat" }),
     ],
   });
 }
@@ -342,7 +342,7 @@ function buildDocx(
           bold: true,
           size: 36,
           color: PRIMARY,
-          font: "Calibri",
+          font: "Montserrat",
         }),
       ],
     }),
@@ -352,19 +352,21 @@ function buildDocx(
     children.push(
       new Paragraph({
         spacing: { after: 160 },
-        children: [new TextRun({ text: data.location, size: 22, color: MUTED, font: "Calibri" })],
+        children: [new TextRun({ text: data.location, size: 22, color: MUTED, font: "Montserrat" })],
       }),
     );
   }
 
   // Pacote de Remuneração (sempre exibido)
-  children.push(sectionHeading("Pacote de Remuneração (Atual)"));
+  children.push(sectionHeading("Pacote de Remuneração (atual ou última)"));
+  const compensationTemplate =
+    "R$ XX.000,00 (CLT ou PJ) + PLR até XX salários (última: XX salários) + Previdência Privada de X:X até X% + Vale Refeição de R$ XX + Vale Alimentação de R$ XX + Assistência Médica XXX + Assistência Odontológica XXX + Veículo XXX.";
   children.push(
     new Paragraph({
       spacing: { after: 80 },
       children: data.compensation
         ? runs(data.compensation, { size: 22 })
-        : [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Calibri" })],
+        : [new TextRun({ text: compensationTemplate, size: 22, color: MUTED, font: "Montserrat" })],
     }),
   );
 
@@ -378,7 +380,7 @@ function buildDocx(
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Calibri" })],
+        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
       }),
     );
   }
@@ -392,14 +394,14 @@ function buildDocx(
         new Paragraph({
           spacing: { before: 160, after: 20 },
           children: [
-            new TextRun({ text: exp.company || "", bold: true, size: 24, font: "Calibri" }),
+            new TextRun({ text: exp.company || "", bold: true, size: 24, font: "Montserrat" }),
             ...(exp.period
               ? [
                   new TextRun({
                     text: `   ${exp.period}`,
                     size: 22,
                     color: MUTED,
-                    font: "Calibri",
+                    font: "Montserrat",
                   }),
                 ]
               : []),
@@ -419,7 +421,7 @@ function buildDocx(
           new Paragraph({
             spacing: { after: 80 },
             children: [
-              new TextRun({ text: exp.location, italics: true, size: 20, color: MUTED, font: "Calibri" }),
+              new TextRun({ text: exp.location, italics: true, size: 20, color: MUTED, font: "Montserrat" }),
             ],
           }),
         );
@@ -431,7 +433,7 @@ function buildDocx(
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Calibri" })],
+        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
       }),
     );
   }
@@ -446,7 +448,7 @@ function buildDocx(
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Calibri" })],
+        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
       }),
     );
   }
@@ -460,7 +462,7 @@ function buildDocx(
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Calibri" })],
+        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
       }),
     );
   }
