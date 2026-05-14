@@ -358,13 +358,15 @@ function buildDocx(
   }
 
   // Pacote de Remuneração (sempre exibido)
-  children.push(sectionHeading("Pacote de Remuneração (Atual)"));
+  children.push(sectionHeading("Pacote de Remuneração (atual ou última)"));
+  const compensationTemplate =
+    "R$ XX.000,00 (CLT ou PJ) + PLR até XX salários (última: XX salários) + Previdência Privada de X:X até X% + Vale Refeição de R$ XX + Vale Alimentação de R$ XX + Assistência Médica XXX + Assistência Odontológica XXX + Veículo XXX.";
   children.push(
     new Paragraph({
       spacing: { after: 80 },
       children: data.compensation
         ? runs(data.compensation, { size: 22 })
-        : [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
+        : [new TextRun({ text: compensationTemplate, size: 22, color: MUTED, font: "Montserrat" })],
     }),
   );
 
