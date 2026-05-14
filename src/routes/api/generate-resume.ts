@@ -194,7 +194,16 @@ export const Route = createFileRoute("/api/generate-resume")({
           }
 
           // 3) Build the .docx
-          const docx = buildDocx(parsed);
+          // Fetch logo bytes (best-effort) for docx header
+          let logoBytes: Uint8Array | null = null;
+          try {
+            const origin = new URL(request.url).origin;
+            const lr = await fetch(new URL(logoUrl, origin).toString());
+            if (lr.ok) logoBytes = new Uint8Array(await lr.arrayBuffer());
+          } catch (e) {
+            console.error("logo fetch failed:", e);
+          }
+          const docx = buildDocx(parsed, logoBytes);
           const blob = await Packer.toBlob(docx);
           const arrayBuffer = await blob.arrayBuffer();
 
