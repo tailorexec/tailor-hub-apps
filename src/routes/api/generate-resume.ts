@@ -11,8 +11,11 @@ import {
   BorderStyle,
   Header,
   ImageRun,
+  TabStopType,
+  TabStopPosition,
 } from "docx";
 import logoUrl from "@/assets/tailor-logo.png";
+import pinUrl from "@/assets/tailor-pin.png";
 
 interface ResumeData {
   name: string;
@@ -194,16 +197,21 @@ export const Route = createFileRoute("/api/generate-resume")({
           }
 
           // 3) Build the .docx
-          // Fetch logo bytes (best-effort) for docx header
+          // Fetch logo + pin bytes (best-effort) for docx header
           let logoBytes: Uint8Array | null = null;
+          let pinBytes: Uint8Array | null = null;
           try {
             const origin = new URL(request.url).origin;
-            const lr = await fetch(new URL(logoUrl, origin).toString());
+            const [lr, pr] = await Promise.all([
+              fetch(new URL(logoUrl, origin).toString()),
+              fetch(new URL(pinUrl, origin).toString()),
+            ]);
             if (lr.ok) logoBytes = new Uint8Array(await lr.arrayBuffer());
+            if (pr.ok) pinBytes = new Uint8Array(await pr.arrayBuffer());
           } catch (e) {
-            console.error("logo fetch failed:", e);
+            console.error("logo/pin fetch failed:", e);
           }
-          const docx = buildDocx(parsed, logoBytes);
+          const docx = buildDocx(parsed, logoBytes, pinBytes);
           const blob = await Packer.toBlob(docx);
           const arrayBuffer = await blob.arrayBuffer();
 
@@ -282,7 +290,11 @@ function bullet(text: string) {
   });
 }
 
-function buildDocx(data: ResumeData, logoBytes: Uint8Array | null): Document {
+function buildDocx(
+  data: ResumeData,
+  logoBytes: Uint8Array | null,
+  pinBytes: Uint8Array | null,
+): Document {
   const children: Paragraph[] = [];
 
   // Header
@@ -433,24 +445,41 @@ function buildDocx(data: ResumeData, logoBytes: Uint8Array | null): Document {
             margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 },
           },
         },
-        headers: logoBytes
-          ? {
-              default: new Header({
-                children: [
-                  new Paragraph({
-                    alignment: AlignmentType.RIGHT,
-                    children: [
-                      new ImageRun({
-                        data: logoBytes,
-                        transformation: { width: 110, height: 32 },
-                        type: "png",
-                      }),
-                    ],
-                  }),
-                ],
-              }),
-            }
-          : undefined,
+        headers:
+          logoBytes || pinBytes
+            ? {
+                default: new Header({
+                  children: [
+                    new Paragraph({
+                      tabStops: [
+                        { type: TabStopType.RIGHT, position: TabStopPosition.MAX },
+                      ],
+                      children: [
+                        ...(pinBytes
+                          ? [
+                              new ImageRun({
+                                data: pinBytes,
+                                transformation: { width: 18, height: 26 },
+                                type: "png",
+                              }),
+                            ]
+                          : []),
+                        new TextRun({ text: "\t" }),
+                        ...(logoBytes
+                          ? [
+                              new ImageRun({
+                                data: logoBytes,
+                                transformation: { width: 110, height: 32 },
+                                type: "png",
+                              }),
+                            ]
+                          : []),
+                      ],
+                    }),
+                  ],
+                }),
+              }
+            : undefined,
         children,
       },
     ],
