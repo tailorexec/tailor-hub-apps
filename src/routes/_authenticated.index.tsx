@@ -1,11 +1,13 @@
-import { useState, useRef } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { Sparkles, Download, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Sparkles, Download, Loader2, CheckCircle, AlertCircle, Clock, ShieldX } from "lucide-react";
 import TailorHeader from "@/components/TailorHeader";
 import TailorHero from "@/components/TailorHero";
 import TailorUploadZone from "@/components/TailorUploadZone";
 import TailorFooter from "@/components/TailorFooter";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -14,11 +16,18 @@ export const Route = createFileRoute("/_authenticated/")({
 });
 
 function Index() {
+  const { profile, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const downloadUrlRef = useRef<string | null>(null);
   const downloadNameRef = useRef<string>("Candidato_CV_Tailor.docx");
+
+  // Refresh profile on mount in case admin just approved it
+  useEffect(() => {
+    // initial state from context is fine
+  }, []);
 
   const toTailorFilename = (rawName?: string | null) => {
     const decoded = rawName ? decodeURIComponent(rawName.replace(/^"|"$/g, "").trim()) : "";
@@ -33,12 +42,16 @@ function Index() {
     setErrorMsg("");
 
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+
       const formData = new FormData();
       formData.append("pdf", file);
 
       const response = await fetch("/api/generate-resume", {
         method: "POST",
         body: formData,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
       if (!response.ok) {
@@ -77,9 +90,60 @@ function Index() {
     a.click();
   };
 
+  // Pending / rejected gate
+  if (profile && profile.status !== "approved") {
+    return (
+      <div className="flex flex-col min-h-screen bg-background">
+        <TailorHeader
+          userEmail={profile.email}
+          isAdmin={isAdmin}
+          onAdmin={() => navigate({ to: "/admin" })}
+          onSignOut={async () => {
+            await signOut();
+            navigate({ to: "/login" });
+          }}
+        />
+        <main className="flex-1 w-full max-w-[640px] mx-auto px-4 md:px-6 py-16">
+          <div className="tailor-card text-center">
+            {profile.status === "pending" ? (
+              <>
+                <div className="mx-auto w-12 h-12 rounded-full bg-[#fffbf0] border-[1.5px] border-[#f0d060] flex items-center justify-center mb-4">
+                  <Clock className="w-5 h-5 text-[#8a6a00]" />
+                </div>
+                <h2 className="text-xl font-bold text-foreground mb-2">Aguardando aprovação</h2>
+                <p className="text-sm text-muted-foreground">
+                  Seu cadastro foi recebido. Um administrador da Tailor precisa aprovar seu acesso antes de você poder usar o gerador.
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="mx-auto w-12 h-12 rounded-full bg-[#fff5f5] border-[1.5px] border-[#f09090] flex items-center justify-center mb-4">
+                  <ShieldX className="w-5 h-5 text-[#8a1a1a]" />
+                </div>
+                <h2 className="text-xl font-bold text-foreground mb-2">Acesso recusado</h2>
+                <p className="text-sm text-muted-foreground">
+                  Seu cadastro foi recusado. Entre em contato com a Tailor se acredita que isso foi um engano.
+                </p>
+              </>
+            )}
+          </div>
+        </main>
+        <TailorFooter />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <TailorHeader />
+      <TailorHeader
+        userEmail={profile?.email}
+        isAdmin={isAdmin}
+        onAdmin={() => navigate({ to: "/admin" })}
+        onSignOut={async () => {
+          await signOut();
+          navigate({ to: "/login" });
+        }}
+      />
       <TailorHero />
 
       <main className="flex-1 w-full max-w-[760px] mx-auto px-4 md:px-6 py-12 md:py-16 pb-20 -mt-10 relative z-10">
