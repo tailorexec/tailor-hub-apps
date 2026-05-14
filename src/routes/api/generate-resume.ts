@@ -50,13 +50,19 @@ Receba o texto bruto extraído de um PDF de currículo e devolva APENAS um JSON 
   "courses": string[]                   // cursos e certificações
 }
 
-Regras de formatação OBRIGATÓRIAS (padrão Tailor):
-- Escreva tudo em português do Brasil.
-- Reescreva os bullets de experiência de forma concisa e orientada a resultados, começando com VERBO NO INFINITIVO (ex: "Coordenar...", "Implantar...", "Desenvolver...", "Gerir...").
-- TODOS os bullets devem terminar com ponto e vírgula ";", exceto o ÚLTIMO bullet de cada cargo, que termina com ponto ".".
-- Palavras em inglês ou estrangeirismos dentro do texto devem ser marcadas com asteriscos para itálico, ex: *Business Partner*, *performance*, *feedback*, *turnover*, *endomarketing*, *compliance*, *LMS*, *headcount*. NÃO marque siglas comuns em português.
-- Não invente informações. Se um campo não existir, devolva string vazia ou array vazio.
-- Não inclua nenhum texto fora do JSON.`;
+Regras de formatação OBRIGATÓRIAS (padrão Tailor) — siga TODAS sem exceção:
+
+1) IDIOMA: Escreva tudo em português do Brasil.
+
+2) VERBOS NO INFINITIVO (REGRA CRÍTICA): TODO bullet do array "bullets" em "experience" DEVE começar OBRIGATORIAMENTE com um verbo no infinitivo (terminado em -ar, -er, -ir). Exemplos válidos: "Coordenar...", "Implantar...", "Desenvolver...", "Gerir...", "Liderar...", "Conduzir...", "Estruturar...", "Acompanhar...", "Garantir...", "Elaborar...", "Reportar...", "Atuar...". NUNCA use formas como "Coordenei", "Coordenando", "Responsável por", "Atuação em", "Gestão de" no início. Se o currículo original usa outra forma, REESCREVA para infinitivo.
+
+3) PONTUAÇÃO DOS BULLETS (REGRA CRÍTICA): Em CADA cargo de "experience.bullets", todos os itens DEVEM terminar com ponto e vírgula ";", EXCETO o ÚLTIMO item do array, que DEVE terminar com ponto ".". A mesma regra se aplica ao array "courses". Não use outros sinais de pontuação no final.
+
+4) ITÁLICO PARA TERMOS EM INGLÊS (REGRA CRÍTICA): TODA palavra ou expressão em inglês/estrangeirismo no texto DEVE ser envolvida por asteriscos para itálico. Exemplos: *Business Partner*, *performance*, *feedback*, *turnover*, *endomarketing*, *compliance*, *LMS*, *headcount*, *onboarding*, *coaching*, *mindset*, *benchmarking*, *stakeholders*, *budget*, *forecast*, *KPI*, *core business*, *people analytics*, *soft skills*, *hard skills*, *home office*. Aplique em QUALQUER campo de texto (role, bullets, compensation, courses, etc.). NÃO marque siglas em português nem nomes próprios de empresas.
+
+5) NÃO invente informações. Se um campo não existir no PDF, devolva string vazia "" ou array vazio [].
+
+6) Devolva APENAS o JSON, sem markdown, sem comentários, sem texto fora do JSON.`;
 
 export const Route = createFileRoute("/api/generate-resume")({
   server: {
