@@ -268,7 +268,7 @@ export const Route = createFileRoute("/api/generate-resume")({
 
 const PRIMARY = "1F2937"; // slate-800
 const MUTED = "6B7280";
-const TAILOR_RED = "C00000"; // Tailor red
+const TAILOR_RED = "640816"; // Tailor red
 
 // Convert text with *italic* markers into TextRun[] preserving italics.
 function runs(
@@ -305,7 +305,7 @@ function runs(
   return out;
 }
 
-const TAILOR_RED_DARK = "941010"; // first 3 sections
+const TAILOR_RED_DARK = "640816"; // first 3 sections
 
 function sectionHeading(text: string, color: string = TAILOR_RED) {
   return new Paragraph({
