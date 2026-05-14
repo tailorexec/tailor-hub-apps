@@ -9,7 +9,10 @@ import {
   AlignmentType,
   LevelFormat,
   BorderStyle,
+  Header,
+  ImageRun,
 } from "docx";
+import logoUrl from "@/assets/tailor-logo.png";
 
 interface ResumeData {
   name: string;
