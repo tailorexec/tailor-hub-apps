@@ -195,13 +195,16 @@ export const Route = createFileRoute("/api/generate-resume")({
           }
 
           const aiJson = await aiRes.json();
-          const raw = aiJson?.choices?.[0]?.message?.content ?? "{}";
+          const raw: string = aiJson?.choices?.[0]?.message?.content ?? "{}";
           let parsed: ResumeData;
           try {
-            parsed = JSON.parse(raw);
-          } catch {
-            const match = raw.match(/\{[\s\S]*\}/);
-            parsed = match ? JSON.parse(match[0]) : ({ name: "Candidato" } as ResumeData);
+            parsed = safeParseResumeJson(raw);
+          } catch (e) {
+            console.error("JSON parse failed:", e, "raw:", raw.slice(0, 500));
+            return Response.json(
+              { error: "A IA retornou um JSON inválido. Tente novamente." },
+              { status: 502 },
+            );
           }
 
           // 3) Build the .docx
