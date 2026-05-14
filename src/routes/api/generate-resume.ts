@@ -5,7 +5,7 @@ import {
   Packer,
   Paragraph,
   TextRun,
-  HeadingLevel,
+  
   AlignmentType,
   LevelFormat,
   BorderStyle,
