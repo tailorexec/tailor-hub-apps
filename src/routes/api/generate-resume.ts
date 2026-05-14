@@ -384,7 +384,7 @@ function buildDocx(
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
+        children: [new TextRun({ text: "sem informação", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
       }),
     );
   }
@@ -437,7 +437,7 @@ function buildDocx(
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
+        children: [new TextRun({ text: "sem informação", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
       }),
     );
   }
@@ -452,7 +452,7 @@ function buildDocx(
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
+        children: [new TextRun({ text: "sem informação", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
       }),
     );
   }
@@ -466,7 +466,7 @@ function buildDocx(
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: [new TextRun({ text: "Não informado", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
+        children: [new TextRun({ text: "sem informação", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
       }),
     );
   }
