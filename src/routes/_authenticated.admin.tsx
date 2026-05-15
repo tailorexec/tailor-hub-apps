@@ -28,6 +28,8 @@ function AdminPage() {
   const [fetching, setFetching] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [tab, setTab] = useState<ProfileStatus>("pending");
+  const [period, setPeriod] = useState<7 | 30 | 90 | 0>(30);
+  const [genCounts, setGenCounts] = useState<Record<string, number>>({});
 
   const load = async () => {
     setFetching(true);
@@ -43,9 +45,31 @@ function AdminPage() {
     setProfiles((data ?? []) as ProfileRow[]);
   };
 
+  const loadGenerations = async () => {
+    let query = supabase.from("generations").select("user_id,created_at");
+    if (period > 0) {
+      const since = new Date(Date.now() - period * 24 * 60 * 60 * 1000).toISOString();
+      query = query.gte("created_at", since);
+    }
+    const { data, error } = await query.limit(10000);
+    if (error) {
+      toast({ title: "Erro ao carregar gerações", description: error.message, variant: "destructive" });
+      return;
+    }
+    const counts: Record<string, number> = {};
+    (data ?? []).forEach((g: { user_id: string }) => {
+      counts[g.user_id] = (counts[g.user_id] ?? 0) + 1;
+    });
+    setGenCounts(counts);
+  };
+
   useEffect(() => {
     if (isAdmin) load();
   }, [isAdmin]);
+
+  useEffect(() => {
+    if (isAdmin) loadGenerations();
+  }, [isAdmin, period]);
 
   if (loading) {
     return (
