@@ -28,6 +28,8 @@ function AdminPage() {
   const [fetching, setFetching] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [tab, setTab] = useState<ProfileStatus>("pending");
+  const [period, setPeriod] = useState<7 | 30 | 90 | 0>(30);
+  const [genCounts, setGenCounts] = useState<Record<string, number>>({});
 
   const load = async () => {
     setFetching(true);
@@ -43,9 +45,31 @@ function AdminPage() {
     setProfiles((data ?? []) as ProfileRow[]);
   };
 
+  const loadGenerations = async () => {
+    let query = supabase.from("generations").select("user_id,created_at");
+    if (period > 0) {
+      const since = new Date(Date.now() - period * 24 * 60 * 60 * 1000).toISOString();
+      query = query.gte("created_at", since);
+    }
+    const { data, error } = await query.limit(10000);
+    if (error) {
+      toast({ title: "Erro ao carregar gerações", description: error.message, variant: "destructive" });
+      return;
+    }
+    const counts: Record<string, number> = {};
+    (data ?? []).forEach((g: { user_id: string }) => {
+      counts[g.user_id] = (counts[g.user_id] ?? 0) + 1;
+    });
+    setGenCounts(counts);
+  };
+
   useEffect(() => {
     if (isAdmin) load();
   }, [isAdmin]);
+
+  useEffect(() => {
+    if (isAdmin) loadGenerations();
+  }, [isAdmin, period]);
 
   if (loading) {
     return (
@@ -127,20 +151,43 @@ function AdminPage() {
           Aprove ou recuse o acesso de novos usuários ao gerador.
         </p>
 
-        <div className="flex gap-2 mb-5 border-b border-border">
-          {tabs.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`px-4 py-2.5 text-sm font-semibold transition-colors border-b-2 -mb-px ${
-                tab === t.key
-                  ? "text-foreground border-primary"
-                  : "text-muted-foreground border-transparent hover:text-foreground"
-              }`}
-            >
-              {t.label} <span className="ml-1 text-xs opacity-70">({counts[t.key]})</span>
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-5 border-b border-border">
+          <div className="flex gap-2">
+            {tabs.map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`px-4 py-2.5 text-sm font-semibold transition-colors border-b-2 -mb-px ${
+                  tab === t.key
+                    ? "text-foreground border-primary"
+                    : "text-muted-foreground border-transparent hover:text-foreground"
+                }`}
+              >
+                {t.label} <span className="ml-1 text-xs opacity-70">({counts[t.key]})</span>
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-1.5 pb-2">
+            <span className="text-xs text-muted-foreground mr-1">Período:</span>
+            {([
+              { v: 7, label: "7d" },
+              { v: 30, label: "30d" },
+              { v: 90, label: "90d" },
+              { v: 0, label: "Todo" },
+            ] as const).map((opt) => (
+              <button
+                key={opt.v}
+                onClick={() => setPeriod(opt.v)}
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold border transition-colors ${
+                  period === opt.v
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="tailor-card !p-0 overflow-hidden">
@@ -163,27 +210,37 @@ function AdminPage() {
                       Cadastrado em {new Date(p.created_at).toLocaleDateString("pt-BR")}
                     </p>
                   </div>
-                  <div className="flex gap-2 shrink-0">
-                    {p.status !== "approved" && (
-                      <button
-                        disabled={busyId === p.id}
-                        onClick={() => updateStatus(p.id, "approved")}
-                        className="inline-flex items-center gap-1.5 rounded-[8px] bg-[#1a6a35] text-white px-3 py-2 text-xs font-bold uppercase tracking-wide hover:brightness-110 disabled:opacity-50"
-                      >
-                        <Check className="w-3.5 h-3.5" />
-                        Aprovar
-                      </button>
+                  <div className="flex items-center gap-3 shrink-0">
+                    {p.status === "approved" && (
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-foreground leading-none">{genCounts[p.id] ?? 0}</p>
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground mt-0.5">
+                          {period === 0 ? "currículos" : `em ${period}d`}
+                        </p>
+                      </div>
                     )}
-                    {p.status !== "rejected" && (
-                      <button
-                        disabled={busyId === p.id}
-                        onClick={() => updateStatus(p.id, "rejected")}
-                        className="inline-flex items-center gap-1.5 rounded-[8px] border border-border text-foreground px-3 py-2 text-xs font-bold uppercase tracking-wide hover:bg-accent disabled:opacity-50"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                        Recusar
-                      </button>
-                    )}
+                    <div className="flex gap-2">
+                      {p.status !== "approved" && (
+                        <button
+                          disabled={busyId === p.id}
+                          onClick={() => updateStatus(p.id, "approved")}
+                          className="inline-flex items-center gap-1.5 rounded-[8px] bg-[#1a6a35] text-white px-3 py-2 text-xs font-bold uppercase tracking-wide hover:brightness-110 disabled:opacity-50"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          Aprovar
+                        </button>
+                      )}
+                      {p.status !== "rejected" && (
+                        <button
+                          disabled={busyId === p.id}
+                          onClick={() => updateStatus(p.id, "rejected")}
+                          className="inline-flex items-center gap-1.5 rounded-[8px] border border-border text-foreground px-3 py-2 text-xs font-bold uppercase tracking-wide hover:bg-accent disabled:opacity-50"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          Recusar
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </li>
               ))}
