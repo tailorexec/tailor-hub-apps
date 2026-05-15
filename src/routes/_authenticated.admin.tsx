@@ -220,41 +220,27 @@ function AdminPage() {
                       </div>
                     )}
                     <div className="flex gap-2">
-            <div className="p-10 text-center text-sm text-muted-foreground">Nenhum cadastro nesta categoria.</div>
-          ) : (
-            <ul className="divide-y divide-border">
-              {filtered.map((p) => (
-                <li key={p.id} className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-5 py-4">
-                  <div className="min-w-0">
-                    <p className="font-semibold text-sm text-foreground truncate">
-                      {p.full_name || "Sem nome"}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">{p.email}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      Cadastrado em {new Date(p.created_at).toLocaleDateString("pt-BR")}
-                    </p>
-                  </div>
-                  <div className="flex gap-2 shrink-0">
-                    {p.status !== "approved" && (
-                      <button
-                        disabled={busyId === p.id}
-                        onClick={() => updateStatus(p.id, "approved")}
-                        className="inline-flex items-center gap-1.5 rounded-[8px] bg-[#1a6a35] text-white px-3 py-2 text-xs font-bold uppercase tracking-wide hover:brightness-110 disabled:opacity-50"
-                      >
-                        <Check className="w-3.5 h-3.5" />
-                        Aprovar
-                      </button>
-                    )}
-                    {p.status !== "rejected" && (
-                      <button
-                        disabled={busyId === p.id}
-                        onClick={() => updateStatus(p.id, "rejected")}
-                        className="inline-flex items-center gap-1.5 rounded-[8px] border border-border text-foreground px-3 py-2 text-xs font-bold uppercase tracking-wide hover:bg-accent disabled:opacity-50"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                        Recusar
-                      </button>
-                    )}
+                      {p.status !== "approved" && (
+                        <button
+                          disabled={busyId === p.id}
+                          onClick={() => updateStatus(p.id, "approved")}
+                          className="inline-flex items-center gap-1.5 rounded-[8px] bg-[#1a6a35] text-white px-3 py-2 text-xs font-bold uppercase tracking-wide hover:brightness-110 disabled:opacity-50"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          Aprovar
+                        </button>
+                      )}
+                      {p.status !== "rejected" && (
+                        <button
+                          disabled={busyId === p.id}
+                          onClick={() => updateStatus(p.id, "rejected")}
+                          className="inline-flex items-center gap-1.5 rounded-[8px] border border-border text-foreground px-3 py-2 text-xs font-bold uppercase tracking-wide hover:bg-accent disabled:opacity-50"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          Recusar
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </li>
               ))}
