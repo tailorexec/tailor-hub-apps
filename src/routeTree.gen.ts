@@ -11,11 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as HubRouteImport } from './routes/hub'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated.index'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiUsageRouteImport } from './routes/api/usage'
 import { Route as ApiGenerateResumeRouteImport } from './routes/api/generate-resume'
+import { Route as AuthenticatedGeneratorRouteImport } from './routes/_authenticated.generator'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 
 const SignupRoute = SignupRouteImport.update({
@@ -28,19 +28,14 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const HubRoute = HubRouteImport.update({
-  id: '/hub',
-  path: '/hub',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiUsageRoute = ApiUsageRouteImport.update({
   id: '/api/usage',
@@ -52,6 +47,11 @@ const ApiGenerateResumeRoute = ApiGenerateResumeRouteImport.update({
   path: '/api/generate-resume',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedGeneratorRoute = AuthenticatedGeneratorRouteImport.update({
+  id: '/generator',
+  path: '/generator',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -59,68 +59,68 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedIndexRoute
-  '/hub': typeof HubRoute
+  '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/generator': typeof AuthenticatedGeneratorRoute
   '/api/generate-resume': typeof ApiGenerateResumeRoute
   '/api/usage': typeof ApiUsageRoute
 }
 export interface FileRoutesByTo {
-  '/hub': typeof HubRoute
+  '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/generator': typeof AuthenticatedGeneratorRoute
   '/api/generate-resume': typeof ApiGenerateResumeRoute
   '/api/usage': typeof ApiUsageRoute
-  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/hub': typeof HubRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/generator': typeof AuthenticatedGeneratorRoute
   '/api/generate-resume': typeof ApiGenerateResumeRoute
   '/api/usage': typeof ApiUsageRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/hub'
     | '/login'
     | '/signup'
     | '/admin'
+    | '/generator'
     | '/api/generate-resume'
     | '/api/usage'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/hub'
+    | '/'
     | '/login'
     | '/signup'
     | '/admin'
+    | '/generator'
     | '/api/generate-resume'
     | '/api/usage'
-    | '/'
   id:
     | '__root__'
+    | '/'
     | '/_authenticated'
-    | '/hub'
     | '/login'
     | '/signup'
     | '/_authenticated/admin'
+    | '/_authenticated/generator'
     | '/api/generate-resume'
     | '/api/usage'
-    | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  HubRoute: typeof HubRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   ApiGenerateResumeRoute: typeof ApiGenerateResumeRoute
@@ -143,13 +143,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/hub': {
-      id: '/hub'
-      path: '/hub'
-      fullPath: '/hub'
-      preLoaderRoute: typeof HubRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -157,12 +150,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/': {
-      id: '/_authenticated/'
+    '/': {
+      id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/usage': {
       id: '/api/usage'
@@ -178,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGenerateResumeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/generator': {
+      id: '/_authenticated/generator'
+      path: '/generator'
+      fullPath: '/generator'
+      preLoaderRoute: typeof AuthenticatedGeneratorRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -190,12 +190,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedGeneratorRoute: typeof AuthenticatedGeneratorRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedGeneratorRoute: AuthenticatedGeneratorRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -203,8 +203,8 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
-  HubRoute: HubRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   ApiGenerateResumeRoute: ApiGenerateResumeRoute,
@@ -213,3 +213,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

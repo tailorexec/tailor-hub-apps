@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 type Status = "idle" | "loading" | "success" | "error";
 
-export const Route = createFileRoute("/_authenticated/")({
+export const Route = createFileRoute("/_authenticated/generator")({
   component: Index,
 });
 

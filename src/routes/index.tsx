@@ -3,7 +3,7 @@ import { FileText, Lock } from "lucide-react";
 import logo from "@/assets/tailor-logo.png";
 import { useAuth } from "@/hooks/useAuth";
 
-export const Route = createFileRoute("/hub")({
+export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Tailor Hub Apps" },
@@ -32,7 +32,7 @@ function HubPage() {
       name: "Gerador de Currículo",
       description: "Crie currículos no padrão Tailor a partir dos seus dados.",
       icon: <FileText className="w-8 h-8" />,
-      to: session ? "/" : "/login",
+      to: session ? "/generator" : "/login",
       available: true,
     },
   ];
