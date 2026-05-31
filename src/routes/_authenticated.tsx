@@ -12,7 +12,7 @@ function AuthenticatedLayout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !session) navigate({ to: "/login" });
+    if (!loading && !session) navigate({ to: "/hub" });
   }, [loading, session, navigate]);
 
   if (loading || !session) {
