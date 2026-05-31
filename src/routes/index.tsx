@@ -3,7 +3,7 @@ import { FileText, Lock } from "lucide-react";
 import logo from "@/assets/tailor-logo.png";
 import { useAuth } from "@/hooks/useAuth";
 
-export const Route = createFileRoute("/hub")({
+export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Tailor Hub Apps" },
