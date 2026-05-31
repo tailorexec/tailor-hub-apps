@@ -18,7 +18,7 @@ function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && session) navigate({ to: "/" });
+    if (!loading && session) navigate({ to: "/generator" });
   }, [loading, session, navigate]);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -30,7 +30,7 @@ function LoginPage() {
       toast({ title: "Erro ao entrar", description: error.message, variant: "destructive" });
       return;
     }
-    navigate({ to: "/" });
+    navigate({ to: "/generator" });
   };
 
   return (

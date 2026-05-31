@@ -19,7 +19,7 @@ function SignupPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && session) navigate({ to: "/" });
+    if (!loading && session) navigate({ to: "/generator" });
   }, [loading, session, navigate]);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -33,7 +33,7 @@ function SignupPage() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${window.location.origin}/generator`,
         data: { full_name: fullName },
       },
     });
@@ -46,7 +46,7 @@ function SignupPage() {
       title: "Cadastro enviado",
       description: "Aguarde a aprovação de um administrador para acessar o gerador.",
     });
-    navigate({ to: "/" });
+    navigate({ to: "/generator" });
   };
 
   return (

@@ -32,7 +32,7 @@ function HubPage() {
       name: "Gerador de Currículo",
       description: "Crie currículos no padrão Tailor a partir dos seus dados.",
       icon: <FileText className="w-8 h-8" />,
-      to: session ? "/" : "/login",
+      to: session ? "/generator" : "/login",
       available: true,
     },
   ];
