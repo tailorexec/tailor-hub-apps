@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { FileText, Lock } from "lucide-react";
+import { FileText, Lock, BarChart3 } from "lucide-react";
 import logo from "@/assets/tailor-logo.png";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -33,6 +33,14 @@ function HubPage() {
       description: "Crie currículos no padrão Tailor a partir dos seus dados.",
       icon: <FileText className="w-8 h-8" />,
       to: session ? "/generator" : "/login",
+      available: true,
+    },
+    {
+      id: "nps",
+      name: "NPS Tailor",
+      description: "Dashboard e formulário de pesquisa de experiência (NPS).",
+      icon: <BarChart3 className="w-8 h-8" />,
+      to: session ? "/nps" : "/login",
       available: true,
     },
   ];
