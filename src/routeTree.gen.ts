@@ -13,8 +13,10 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as NpsFormRouteImport } from './routes/nps.form'
 import { Route as ApiUsageRouteImport } from './routes/api/usage'
 import { Route as ApiGenerateResumeRouteImport } from './routes/api/generate-resume'
+import { Route as AuthenticatedNpsRouteImport } from './routes/_authenticated.nps'
 import { Route as AuthenticatedGeneratorRouteImport } from './routes/_authenticated.generator'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 
@@ -37,6 +39,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NpsFormRoute = NpsFormRouteImport.update({
+  id: '/nps/form',
+  path: '/nps/form',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiUsageRoute = ApiUsageRouteImport.update({
   id: '/api/usage',
   path: '/api/usage',
@@ -46,6 +53,11 @@ const ApiGenerateResumeRoute = ApiGenerateResumeRouteImport.update({
   id: '/api/generate-resume',
   path: '/api/generate-resume',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedNpsRoute = AuthenticatedNpsRouteImport.update({
+  id: '/nps',
+  path: '/nps',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedGeneratorRoute = AuthenticatedGeneratorRouteImport.update({
   id: '/generator',
@@ -64,8 +76,10 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/generator': typeof AuthenticatedGeneratorRoute
+  '/nps': typeof AuthenticatedNpsRoute
   '/api/generate-resume': typeof ApiGenerateResumeRoute
   '/api/usage': typeof ApiUsageRoute
+  '/nps/form': typeof NpsFormRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -73,8 +87,10 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/generator': typeof AuthenticatedGeneratorRoute
+  '/nps': typeof AuthenticatedNpsRoute
   '/api/generate-resume': typeof ApiGenerateResumeRoute
   '/api/usage': typeof ApiUsageRoute
+  '/nps/form': typeof NpsFormRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -84,8 +100,10 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/generator': typeof AuthenticatedGeneratorRoute
+  '/_authenticated/nps': typeof AuthenticatedNpsRoute
   '/api/generate-resume': typeof ApiGenerateResumeRoute
   '/api/usage': typeof ApiUsageRoute
+  '/nps/form': typeof NpsFormRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -95,8 +113,10 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/generator'
+    | '/nps'
     | '/api/generate-resume'
     | '/api/usage'
+    | '/nps/form'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -104,8 +124,10 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/generator'
+    | '/nps'
     | '/api/generate-resume'
     | '/api/usage'
+    | '/nps/form'
   id:
     | '__root__'
     | '/'
@@ -114,8 +136,10 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_authenticated/admin'
     | '/_authenticated/generator'
+    | '/_authenticated/nps'
     | '/api/generate-resume'
     | '/api/usage'
+    | '/nps/form'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -125,6 +149,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   ApiGenerateResumeRoute: typeof ApiGenerateResumeRoute
   ApiUsageRoute: typeof ApiUsageRoute
+  NpsFormRoute: typeof NpsFormRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -157,6 +182,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/nps/form': {
+      id: '/nps/form'
+      path: '/nps/form'
+      fullPath: '/nps/form'
+      preLoaderRoute: typeof NpsFormRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/usage': {
       id: '/api/usage'
       path: '/api/usage'
@@ -170,6 +202,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/generate-resume'
       preLoaderRoute: typeof ApiGenerateResumeRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/nps': {
+      id: '/_authenticated/nps'
+      path: '/nps'
+      fullPath: '/nps'
+      preLoaderRoute: typeof AuthenticatedNpsRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/generator': {
       id: '/_authenticated/generator'
@@ -191,11 +230,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedGeneratorRoute: typeof AuthenticatedGeneratorRoute
+  AuthenticatedNpsRoute: typeof AuthenticatedNpsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedGeneratorRoute: AuthenticatedGeneratorRoute,
+  AuthenticatedNpsRoute: AuthenticatedNpsRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -209,17 +250,8 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   ApiGenerateResumeRoute: ApiGenerateResumeRoute,
   ApiUsageRoute: ApiUsageRoute,
+  NpsFormRoute: NpsFormRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

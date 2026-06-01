@@ -32,6 +32,66 @@ export type Database = {
         }
         Relationships: []
       }
+      nps_access: {
+        Row: {
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["nps_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["nps_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["nps_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      nps_responses: {
+        Row: {
+          atendimento: number | null
+          comentarios: string | null
+          consultor: string | null
+          contratado: boolean
+          created_at: string
+          entendimento: number | null
+          id: string
+          nome: string | null
+          nps_score: number
+          projeto: number | null
+        }
+        Insert: {
+          atendimento?: number | null
+          comentarios?: string | null
+          consultor?: string | null
+          contratado: boolean
+          created_at?: string
+          entendimento?: number | null
+          id?: string
+          nome?: string | null
+          nps_score: number
+          projeto?: number | null
+        }
+        Update: {
+          atendimento?: number | null
+          comentarios?: string | null
+          consultor?: string | null
+          contratado?: boolean
+          created_at?: string
+          entendimento?: number | null
+          id?: string
+          nome?: string | null
+          nps_score?: number
+          projeto?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -85,6 +145,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_nps_access: { Args: { _uid: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -92,9 +153,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_nps_admin: { Args: { _uid: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"
+      nps_role: "pending" | "approved" | "rejected" | "admin"
       profile_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
@@ -224,6 +287,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      nps_role: ["pending", "approved", "rejected", "admin"],
       profile_status: ["pending", "approved", "rejected"],
     },
   },
