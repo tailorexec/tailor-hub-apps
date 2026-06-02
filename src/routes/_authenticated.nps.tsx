@@ -543,6 +543,33 @@ function NpsPage() {
           </div>
         )}
       </main>
+      {openComment && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+          onClick={() => setOpenComment(null)}
+        >
+          <div
+            className="w-full max-w-lg bg-card border border-border rounded-xl p-6 shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">
+                Comentário
+              </h3>
+              <button
+                onClick={() => setOpenComment(null)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+              {openComment}
+            </p>
+          </div>
+        </div>
+      )}
+
       <TailorFooter />
     </div>
   );
