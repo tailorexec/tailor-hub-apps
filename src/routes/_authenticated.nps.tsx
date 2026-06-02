@@ -445,8 +445,19 @@ function NpsPage() {
                             <td className="text-center px-2 py-2">{r.entendimento ?? "—"}</td>
                             <td className="text-center px-2 py-2">{r.atendimento ?? "—"}</td>
                             <td className="text-center px-2 py-2">{r.projeto ?? "—"}</td>
-                            <td className="px-4 py-2 max-w-[280px] truncate" title={r.comentarios ?? ""}>
-                              {r.comentarios || "—"}
+                            <td className="px-4 py-2 max-w-[280px]">
+                              {r.comentarios ? (
+                                <button
+                                  onClick={() => setOpenComment(r.comentarios!)}
+                                  className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline truncate max-w-full"
+                                  title="Ler comentário completo"
+                                >
+                                  <MessageSquareText className="w-3.5 h-3.5 shrink-0" />
+                                  <span className="truncate">{r.comentarios}</span>
+                                </button>
+                              ) : (
+                                "—"
+                              )}
                             </td>
                             {isAdmin && (
                               <td className="px-2 py-2">
