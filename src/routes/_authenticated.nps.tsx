@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Check, X, Copy, ArrowLeft, ShieldX, Trash2 } from "lucide-react";
+import { Loader2, Check, X, Copy, ArrowLeft, ShieldX, Trash2, MessageSquareText } from "lucide-react";
 import TailorHeader from "@/components/TailorHeader";
 import TailorFooter from "@/components/TailorFooter";
 import { useAuth } from "@/hooks/useAuth";
