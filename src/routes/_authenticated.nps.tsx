@@ -51,6 +51,7 @@ function NpsPage() {
   const [fetching, setFetching] = useState(true);
   const [period, setPeriod] = useState<7 | 30 | 90 | 0>(30);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [openComment, setOpenComment] = useState<string | null>(null);
 
   const isAdmin = accessStatus === "admin";
   const hasAccess = accessStatus === "approved" || accessStatus === "admin";
