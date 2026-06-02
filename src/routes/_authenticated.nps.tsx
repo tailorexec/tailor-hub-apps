@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Check, X, Copy, ArrowLeft, ShieldX, Trash2 } from "lucide-react";
+import { Loader2, Check, X, Copy, ArrowLeft, ShieldX, Trash2, MessageSquareText } from "lucide-react";
 import TailorHeader from "@/components/TailorHeader";
 import TailorFooter from "@/components/TailorFooter";
 import { useAuth } from "@/hooks/useAuth";
@@ -51,6 +51,7 @@ function NpsPage() {
   const [fetching, setFetching] = useState(true);
   const [period, setPeriod] = useState<7 | 30 | 90 | 0>(30);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [openComment, setOpenComment] = useState<string | null>(null);
 
   const isAdmin = accessStatus === "admin";
   const hasAccess = accessStatus === "approved" || accessStatus === "admin";
@@ -444,8 +445,19 @@ function NpsPage() {
                             <td className="text-center px-2 py-2">{r.entendimento ?? "—"}</td>
                             <td className="text-center px-2 py-2">{r.atendimento ?? "—"}</td>
                             <td className="text-center px-2 py-2">{r.projeto ?? "—"}</td>
-                            <td className="px-4 py-2 max-w-[280px] truncate" title={r.comentarios ?? ""}>
-                              {r.comentarios || "—"}
+                            <td className="px-4 py-2 max-w-[280px]">
+                              {r.comentarios ? (
+                                <button
+                                  onClick={() => setOpenComment(r.comentarios!)}
+                                  className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline truncate max-w-full"
+                                  title="Ler comentário completo"
+                                >
+                                  <MessageSquareText className="w-3.5 h-3.5 shrink-0" />
+                                  <span className="truncate">{r.comentarios}</span>
+                                </button>
+                              ) : (
+                                "—"
+                              )}
                             </td>
                             {isAdmin && (
                               <td className="px-2 py-2">
@@ -531,6 +543,33 @@ function NpsPage() {
           </div>
         )}
       </main>
+      {openComment && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+          onClick={() => setOpenComment(null)}
+        >
+          <div
+            className="w-full max-w-lg bg-card border border-border rounded-xl p-6 shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-wide text-foreground">
+                Comentário
+              </h3>
+              <button
+                onClick={() => setOpenComment(null)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+              {openComment}
+            </p>
+          </div>
+        </div>
+      )}
+
       <TailorFooter />
     </div>
   );
