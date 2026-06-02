@@ -18,7 +18,7 @@ type AppTile = {
   name: string;
   description: string;
   icon: React.ReactNode;
-  to?: string;
+  target: string;
   available: boolean;
 };
 
@@ -32,7 +32,7 @@ function HubPage() {
       name: "Gerador de Currículo",
       description: "Crie currículos no padrão Tailor a partir dos seus dados.",
       icon: <FileText className="w-8 h-8" />,
-      to: session ? "/generator" : "/login",
+      target: "/generator",
       available: true,
     },
     {
@@ -40,14 +40,18 @@ function HubPage() {
       name: "NPS Tailor",
       description: "Dashboard e formulário de pesquisa de experiência (NPS).",
       icon: <BarChart3 className="w-8 h-8" />,
-      to: session ? "/nps" : "/login",
+      target: "/nps",
       available: true,
     },
   ];
 
   const handleClick = (app: AppTile) => {
-    if (!app.available || !app.to) return;
-    navigate({ to: app.to });
+    if (!app.available) return;
+    if (session) {
+      navigate({ to: app.target });
+    } else {
+      navigate({ to: "/login", search: { redirect: app.target } });
+    }
   };
 
   return (

@@ -7,19 +7,23 @@ import { toast } from "@/hooks/use-toast";
 import logo from "@/assets/tailor-logo.png";
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: typeof search.redirect === "string" ? search.redirect : "/generator",
+  }),
   component: LoginPage,
 });
 
 function LoginPage() {
   const navigate = useNavigate();
   const { session, loading } = useAuth();
+  const { redirect } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && session) navigate({ to: "/generator" });
-  }, [loading, session, navigate]);
+    if (!loading && session) navigate({ to: redirect });
+  }, [loading, session, navigate, redirect]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -30,7 +34,7 @@ function LoginPage() {
       toast({ title: "Erro ao entrar", description: error.message, variant: "destructive" });
       return;
     }
-    navigate({ to: "/generator" });
+    navigate({ to: redirect });
   };
 
   return (
