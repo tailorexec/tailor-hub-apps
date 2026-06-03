@@ -224,28 +224,9 @@ function NpsPage() {
                 Seu acesso foi recusado. Entre em contato com o administrador.
               </p>
             ) : (
-              <>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Você ainda não tem acesso ao dashboard NPS. Solicite acesso ao administrador.
-                </p>
-                <button
-                  onClick={async () => {
-                    if (!user) return;
-                    const { error } = await supabase
-                      .from("nps_access")
-                      .insert({ user_id: user.id, status: "pending" });
-                    if (error) {
-                      toast({ title: "Erro", description: error.message, variant: "destructive" });
-                      return;
-                    }
-                    setAccessStatus("pending");
-                    toast({ title: "Solicitação enviada" });
-                  }}
-                  className="inline-flex items-center gap-2 rounded-[8px] bg-primary text-primary-foreground px-5 py-2.5 text-sm font-bold uppercase tracking-wide hover:brightness-110"
-                >
-                  Solicitar acesso
-                </button>
-              </>
+              <p className="text-sm text-muted-foreground">
+                Você não tem acesso ao dashboard NPS. Entre em contato com o administrador para solicitar acesso.
+              </p>
             )}
           </div>
         </main>
