@@ -74,7 +74,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Gerador de Currículo" },
+      { title: "Tailor Hub" },
       { name: "description", content: "Resume Replication generates resumes from provided data, allowing for custom branding and internal use notes." },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "Gerador de Currículo" },
