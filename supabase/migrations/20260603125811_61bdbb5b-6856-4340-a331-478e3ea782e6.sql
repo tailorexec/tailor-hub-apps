@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Users insert own pending request" ON public.nps_access;
