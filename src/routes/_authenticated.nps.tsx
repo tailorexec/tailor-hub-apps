@@ -32,6 +32,12 @@ interface AccessRow {
 }
 
 export const Route = createFileRoute("/_authenticated/nps")({
+  head: () => ({
+    meta: [
+      { title: "NPS Tailor" },
+      { name: "description", content: "Dashboard de métricas e respostas da pesquisa NPS da Tailor." },
+    ],
+  }),
   component: NpsPage,
 });
 
