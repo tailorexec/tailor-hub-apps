@@ -464,6 +464,7 @@ function buildDocx(
           new Paragraph({
             spacing: { before: 160, after: 20 },
             tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+            border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "000000", space: 2 } },
             children: [
               new TextRun({ text: exp.company || "", bold: true, size: 23, font: "Montserrat" }),
               ...(exp.period
