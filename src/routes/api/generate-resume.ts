@@ -38,7 +38,7 @@ Receba o texto bruto extraído de um PDF de currículo e devolva APENAS um JSON 
   "name": string,                       // nome completo do candidato (será exibido em CAIXA ALTA)
   "location": string,                   // cidade – UF (ex: "Manaus – AM")
   "compensation": string,               // pacote de remuneração ATUAL em um único parágrafo. Ex: "R$ 15.000,00 (CLT) + PLR até 3 salários (última: 3 salários) + Vale Alimentação de R$ 1.100,00 + Assistência Médica + Assistência Odontológica + Wellhub". Se não houver, devolva "".
-  "education": string[],                // cada item é uma linha de formação acadêmica (ex: "Pós-Graduação em ...", "MBA em ...", "Graduação em ...")
+  "education": string[],                // cada item DEVE conter APENAS o grau + título do curso, SEM instituição e SEM datas. Ex: "MBA em Gestão Financeira", "Graduação em Engenharia Civil", "Pós-Graduação em Gestão de Pessoas". NUNCA inclua nome da faculdade/universidade nem ano de conclusão.
   "experience": [{
     "company": string,                  // nome da empresa
     "period": string,                   // período total na empresa (ex: "Set/2013 – Out/2024" ou "Out/2024 – Atual")
