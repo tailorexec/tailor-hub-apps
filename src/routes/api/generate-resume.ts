@@ -223,7 +223,9 @@ export const Route = createFileRoute("/api/generate-resume")({
           const blob = await Packer.toBlob(docx);
           const arrayBuffer = await blob.arrayBuffer();
 
-          const nameParts = (parsed.name || "Candidato").trim().split(/\s+/).filter(Boolean);
+          const toTitleCase = (s: string) =>
+            s.toLocaleLowerCase("pt-BR").replace(/(^|\s|-|')(\p{L})/gu, (_, sep, ch) => sep + ch.toLocaleUpperCase("pt-BR"));
+          const nameParts = (parsed.name || "Candidato").trim().split(/\s+/).filter(Boolean).map(toTitleCase);
           const firstLast =
             nameParts.length >= 2
               ? `${nameParts[0]} ${nameParts[nameParts.length - 1]}`
