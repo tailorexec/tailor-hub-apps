@@ -547,6 +547,14 @@ function buildDocx(
     );
   }
 
+  // Outras Atividades Relevantes (exibido apenas se houver)
+  if (data.other_activities?.length) {
+    children.push(sectionHeading("Outras Atividades Relevantes"));
+    const items = normalizeBullets(data.other_activities);
+    for (const a of items) children.push(bullet(a));
+  }
+
+
 
   return new Document({
     creator: "Tailor CV Generator",
