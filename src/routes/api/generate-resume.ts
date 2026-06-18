@@ -11,6 +11,8 @@ import {
   BorderStyle,
   Header,
   ImageRun,
+  TabStopType,
+  TabStopPosition,
 } from "docx";
 import logoUrl from "@/assets/tailor-logo.png";
 
