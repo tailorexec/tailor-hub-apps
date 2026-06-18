@@ -58,6 +58,8 @@ Regras de formatação OBRIGATÓRIAS (padrão Tailor) — siga TODAS sem exceç�
 
 1) IDIOMA: Escreva tudo em português do Brasil.
 
+1.1) COMPLETUDE OBRIGATÓRIA (REGRA CRÍTICA): Você DEVE incluir TODAS as experiências profissionais, TODOS os cursos, TODOS os idiomas, TODAS as formações e TODAS as outras atividades relevantes presentes no currículo original, SEM EXCEÇÃO. Inclua também estágios, trainees e cargos sem descrição de responsabilidades (nesse caso, devolva bullets como []). NUNCA agrupe, resuma, omita ou pule itens. Se o original lista 5 experiências, o JSON deve ter 5 (ou mais, se houver vários cargos na mesma empresa).
+
 2) VERBOS NO INFINITIVO (REGRA CRÍTICA): TODO bullet do array "bullets" em "experience" DEVE começar OBRIGATORIAMENTE com um verbo no infinitivo (terminado em -ar, -er, -ir). Exemplos válidos: "Coordenar...", "Implantar...", "Desenvolver...", "Gerir...", "Liderar...", "Conduzir...", "Estruturar...", "Acompanhar...", "Garantir...", "Elaborar...", "Reportar...", "Atuar...". NUNCA use formas como "Coordenei", "Coordenando", "Responsável por", "Atuação em", "Gestão de" no início. Se o currículo original usa outra forma, REESCREVA para infinitivo.
 
 3) PONTUAÇÃO DOS BULLETS (REGRA CRÍTICA): Em CADA cargo de "experience.bullets", todos os itens DEVEM terminar com ponto e vírgula ";", EXCETO o ÚLTIMO item do array, que DEVE terminar com ponto ".". A mesma regra se aplica ao array "courses". Não use outros sinais de pontuação no final.
