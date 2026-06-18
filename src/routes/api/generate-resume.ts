@@ -185,6 +185,8 @@ export const Route = createFileRoute("/api/generate-resume")({
                 { role: "user", content: pdfText.slice(0, 60000) },
               ],
               response_format: { type: "json_object" },
+              max_tokens: 16000,
+              temperature: 0.2,
             }),
           });
 
