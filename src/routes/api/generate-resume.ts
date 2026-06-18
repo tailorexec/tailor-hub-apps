@@ -11,6 +11,8 @@ import {
   BorderStyle,
   Header,
   ImageRun,
+  TabStopType,
+  TabStopPosition,
 } from "docx";
 import logoUrl from "@/assets/tailor-logo.png";
 
@@ -38,7 +40,7 @@ Receba o texto bruto extraído de um PDF de currículo e devolva APENAS um JSON 
   "name": string,                       // nome completo do candidato (será exibido em CAIXA ALTA)
   "location": string,                   // cidade – UF (ex: "Manaus – AM")
   "compensation": string,               // pacote de remuneração ATUAL em um único parágrafo. Ex: "R$ 15.000,00 (CLT) + PLR até 3 salários (última: 3 salários) + Vale Alimentação de R$ 1.100,00 + Assistência Médica + Assistência Odontológica + Wellhub". Se não houver, devolva "".
-  "education": string[],                // cada item é uma linha de formação acadêmica (ex: "Pós-Graduação em ...", "MBA em ...", "Graduação em ...")
+  "education": string[],                // cada item DEVE conter APENAS o grau + título do curso, SEM instituição e SEM datas. Ex: "MBA em Gestão Financeira", "Graduação em Engenharia Civil", "Pós-Graduação em Gestão de Pessoas". NUNCA inclua nome da faculdade/universidade nem ano de conclusão.
   "experience": [{
     "company": string,                  // nome da empresa
     "period": string,                   // período total na empresa (ex: "Set/2013 – Out/2024" ou "Out/2024 – Atual")
@@ -221,7 +223,9 @@ export const Route = createFileRoute("/api/generate-resume")({
           const blob = await Packer.toBlob(docx);
           const arrayBuffer = await blob.arrayBuffer();
 
-          const nameParts = (parsed.name || "Candidato").trim().split(/\s+/).filter(Boolean);
+          const toTitleCase = (s: string) =>
+            s.toLocaleLowerCase("pt-BR").replace(/(^|\s|-|')(\p{L})/gu, (_, sep, ch) => sep + ch.toLocaleUpperCase("pt-BR"));
+          const nameParts = (parsed.name || "Candidato").trim().split(/\s+/).filter(Boolean).map(toTitleCase);
           const firstLast =
             nameParts.length >= 2
               ? `${nameParts[0]} ${nameParts[nameParts.length - 1]}`
@@ -459,12 +463,13 @@ function buildDocx(
         children.push(
           new Paragraph({
             spacing: { before: 160, after: 20 },
+            tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
             children: [
               new TextRun({ text: exp.company || "", bold: true, size: 23, font: "Montserrat" }),
               ...(exp.period
                 ? [
                     new TextRun({
-                      text: `   ${exp.period}`,
+                      text: `\t${exp.period}`,
                       size: 22,
                       color: MUTED,
                       font: "Montserrat",
