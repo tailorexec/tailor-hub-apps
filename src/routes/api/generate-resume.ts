@@ -31,6 +31,7 @@ interface ResumeData {
   }>;
   languages?: string[];
   courses?: string[];
+  other_activities?: string[];
 }
 
 const SYSTEM_PROMPT = `Você é um especialista em recrutamento da consultoria "Tailor" e estrutura currículos no padrão Tailor.
@@ -46,15 +47,18 @@ Receba o texto bruto extraído de um PDF de currículo e devolva APENAS um JSON 
     "period": string,                   // período total na empresa (ex: "Set/2013 – Out/2024" ou "Out/2024 – Atual")
     "role": string,                     // cargo. Se houver vários cargos na mesma empresa, crie UMA entrada por cargo, repetindo a empresa, e inclua o período do cargo entre parênteses no campo "role" (ex: "Coordenadora Business Partner RH (Jun/2023 – Out/2024)")
     "location": string,                 // cidade, UF (ex: "Manaus, AM")
-    "bullets": string[]                 // responsabilidades/realizações
+    "bullets": string[]                 // responsabilidades/realizações. Se o currículo NÃO descrever responsabilidades para o cargo, devolva [] (array vazio) — NUNCA omita a experiência por falta de bullets.
   }],
   "languages": string[],                // ex: ["Inglês Intermediário – Informado pela candidata"]
-  "courses": string[]                   // cursos e certificações
+  "courses": string[],                  // cursos e certificações
+  "other_activities": string[]          // outras atividades relevantes (atuação como secretária em arbitragens, conselhos, voluntariado, etc.). Se não houver, devolva [].
 }
 
 Regras de formatação OBRIGATÓRIAS (padrão Tailor) — siga TODAS sem exceção:
 
 1) IDIOMA: Escreva tudo em português do Brasil.
+
+1.1) COMPLETUDE OBRIGATÓRIA (REGRA CRÍTICA): Você DEVE incluir TODAS as experiências profissionais, TODOS os cursos, TODOS os idiomas, TODAS as formações e TODAS as outras atividades relevantes presentes no currículo original, SEM EXCEÇÃO. Inclua também estágios, trainees e cargos sem descrição de responsabilidades (nesse caso, devolva bullets como []). NUNCA agrupe, resuma, omita ou pule itens. Se o original lista 5 experiências, o JSON deve ter 5 (ou mais, se houver vários cargos na mesma empresa).
 
 2) VERBOS NO INFINITIVO (REGRA CRÍTICA): TODO bullet do array "bullets" em "experience" DEVE começar OBRIGATORIAMENTE com um verbo no infinitivo (terminado em -ar, -er, -ir). Exemplos válidos: "Coordenar...", "Implantar...", "Desenvolver...", "Gerir...", "Liderar...", "Conduzir...", "Estruturar...", "Acompanhar...", "Garantir...", "Elaborar...", "Reportar...", "Atuar...". NUNCA use formas como "Coordenei", "Coordenando", "Responsável por", "Atuação em", "Gestão de" no início. Se o currículo original usa outra forma, REESCREVA para infinitivo.
 
@@ -181,6 +185,8 @@ export const Route = createFileRoute("/api/generate-resume")({
                 { role: "user", content: pdfText.slice(0, 60000) },
               ],
               response_format: { type: "json_object" },
+              max_tokens: 16000,
+              temperature: 0.2,
             }),
           });
 
@@ -540,6 +546,14 @@ function buildDocx(
       }),
     );
   }
+
+  // Outras Atividades Relevantes (exibido apenas se houver)
+  if (data.other_activities?.length) {
+    children.push(sectionHeading("Outras Atividades Relevantes"));
+    const items = normalizeBullets(data.other_activities);
+    for (const a of items) children.push(bullet(a));
+  }
+
 
 
   return new Document({
