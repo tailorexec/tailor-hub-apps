@@ -31,6 +31,7 @@ interface ResumeData {
   }>;
   languages?: string[];
   courses?: string[];
+  other_activities?: string[];
 }
 
 const SYSTEM_PROMPT = `Você é um especialista em recrutamento da consultoria "Tailor" e estrutura currículos no padrão Tailor.
