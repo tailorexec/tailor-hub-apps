@@ -461,12 +461,13 @@ function buildDocx(
         children.push(
           new Paragraph({
             spacing: { before: 160, after: 20 },
+            tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
             children: [
               new TextRun({ text: exp.company || "", bold: true, size: 23, font: "Montserrat" }),
               ...(exp.period
                 ? [
                     new TextRun({
-                      text: `   ${exp.period}`,
+                      text: `\t${exp.period}`,
                       size: 22,
                       color: MUTED,
                       font: "Montserrat",
