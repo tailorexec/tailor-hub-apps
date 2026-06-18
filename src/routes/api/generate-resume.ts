@@ -46,10 +46,11 @@ Receba o texto bruto extraído de um PDF de currículo e devolva APENAS um JSON 
     "period": string,                   // período total na empresa (ex: "Set/2013 – Out/2024" ou "Out/2024 – Atual")
     "role": string,                     // cargo. Se houver vários cargos na mesma empresa, crie UMA entrada por cargo, repetindo a empresa, e inclua o período do cargo entre parênteses no campo "role" (ex: "Coordenadora Business Partner RH (Jun/2023 – Out/2024)")
     "location": string,                 // cidade, UF (ex: "Manaus, AM")
-    "bullets": string[]                 // responsabilidades/realizações
+    "bullets": string[]                 // responsabilidades/realizações. Se o currículo NÃO descrever responsabilidades para o cargo, devolva [] (array vazio) — NUNCA omita a experiência por falta de bullets.
   }],
   "languages": string[],                // ex: ["Inglês Intermediário – Informado pela candidata"]
-  "courses": string[]                   // cursos e certificações
+  "courses": string[],                  // cursos e certificações
+  "other_activities": string[]          // outras atividades relevantes (atuação como secretária em arbitragens, conselhos, voluntariado, etc.). Se não houver, devolva [].
 }
 
 Regras de formatação OBRIGATÓRIAS (padrão Tailor) — siga TODAS sem exceção:
