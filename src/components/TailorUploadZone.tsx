@@ -13,9 +13,9 @@ const TailorUploadZone = ({ file, onFileChange }: Props) => {
   const handleFiles = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     const f = files[0];
-    if (f.type !== "application/pdf" && !f.name.toLowerCase().endsWith(".pdf")) {
-      return;
-    }
+    const name = f.name.toLowerCase();
+    const ok = [".pdf", ".docx", ".txt"].some((ext) => name.endsWith(ext));
+    if (!ok) return;
     onFileChange(f);
   };
 
