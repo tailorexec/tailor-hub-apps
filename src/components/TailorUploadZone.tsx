@@ -13,9 +13,9 @@ const TailorUploadZone = ({ file, onFileChange }: Props) => {
   const handleFiles = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     const f = files[0];
-    if (f.type !== "application/pdf" && !f.name.toLowerCase().endsWith(".pdf")) {
-      return;
-    }
+    const name = f.name.toLowerCase();
+    const ok = [".pdf", ".docx", ".txt"].some((ext) => name.endsWith(ext));
+    if (!ok) return;
     onFileChange(f);
   };
 
@@ -68,14 +68,14 @@ const TailorUploadZone = ({ file, onFileChange }: Props) => {
           <UploadCloud className="w-6 h-6 text-muted-foreground" />
         </div>
         <p className="text-sm font-semibold text-foreground">
-          Clique ou arraste o PDF aqui
+          Clique ou arraste o arquivo aqui
         </p>
-        <p className="text-xs text-muted-foreground">Apenas arquivos .pdf</p>
+        <p className="text-xs text-muted-foreground">Arquivos .pdf, .docx ou .txt</p>
       </div>
       <input
         ref={inputRef}
         type="file"
-        accept="application/pdf,.pdf"
+        accept="application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.txt,text/plain"
         className="hidden"
         onChange={(e) => handleFiles(e.target.files)}
       />

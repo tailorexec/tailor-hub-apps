@@ -153,17 +153,53 @@ export const Route = createFileRoute("/api/generate-resume")({
           const pdf = formData.get("pdf");
 
           if (!(pdf instanceof File)) {
-            return Response.json({ error: "Envie um arquivo PDF no campo 'pdf'." }, { status: 400 });
+            return Response.json(
+              { error: "Envie um arquivo PDF, DOCX ou TXT no campo 'pdf'." },
+              { status: 400 },
+            );
           }
 
-          // 1) Extract text from PDF
+          // 1) Extract text (PDF, DOCX or TXT)
           const buf = new Uint8Array(await pdf.arrayBuffer());
-          const doc = await getDocumentProxy(buf);
-          const { text } = await extractText(doc, { mergePages: true });
-          const pdfText = (Array.isArray(text) ? text.join("\n") : text).trim();
+          const lowerName = pdf.name.toLowerCase();
+          let pdfText = "";
+
+          if (lowerName.endsWith(".txt") || pdf.type === "text/plain") {
+            pdfText = new TextDecoder().decode(buf).trim();
+          } else if (
+            lowerName.endsWith(".docx") ||
+            pdf.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          ) {
+            const { unzipSync, strFromU8 } = await import("fflate");
+            const files = unzipSync(buf);
+            const parts = Object.keys(files).filter(
+              (n) => n === "word/document.xml" || /^word\/(header|footer)\d*\.xml$/.test(n),
+            );
+            const xml = parts.map((n) => strFromU8(files[n])).join("\n");
+            pdfText = xml
+              .replace(/<w:p[ >]/g, "\n<w:p ")
+              .replace(/<w:tab\b[^>]*\/?>/g, "\t")
+              .replace(/<w:br\b[^>]*\/?>/g, "\n")
+              .replace(/<[^>]+>/g, "")
+              .replace(/&lt;/g, "<")
+              .replace(/&gt;/g, ">")
+              .replace(/&amp;/g, "&")
+              .replace(/&quot;/g, '"')
+              .replace(/&apos;/g, "'")
+              .replace(/[ \t]+\n/g, "\n")
+              .replace(/\n{3,}/g, "\n\n")
+              .trim();
+          } else {
+            const doc = await getDocumentProxy(buf);
+            const { text } = await extractText(doc, { mergePages: true });
+            pdfText = (Array.isArray(text) ? text.join("\n") : text).trim();
+          }
 
           if (!pdfText) {
-            return Response.json({ error: "Não foi possível extrair texto do PDF." }, { status: 422 });
+            return Response.json(
+              { error: "Não foi possível extrair texto do arquivo enviado." },
+              { status: 422 },
+            );
           }
 
           // 2) Ask Lovable AI to structure it
