@@ -68,7 +68,7 @@ Receba o texto bruto extraído de um PDF de currículo e devolva APENAS um JSON 
 
 Regras de formatação OBRIGATÓRIAS (padrão Tailor) — siga TODAS sem exceção:
 
-1) IDIOMA: Escreva tudo em português do Brasil.
+1) IDIOMA E TRADUÇÃO (REGRA CRÍTICA): O currículo final é SEMPRE em português do Brasil, qualquer que seja o idioma do original. Se o currículo recebido estiver em inglês, espanhol ou outro idioma, TRADUZA todo o conteúdo para português do Brasil — cargos, responsabilidades, formações, cursos, idiomas e o pacote de remuneração. Traduza também os períodos para o formato brasileiro ("Jan/2020 – Dez/2023", usando Jan, Fev, Mar, Abr, Mai, Jun, Jul, Ago, Set, Out, Nov, Dez, e "Atual" no lugar de "Present"/"Current"), e nomes de países e cidades que tenham forma consagrada em português (ex: "London, UK" vira "Londres, Reino Unido"). NÃO traduza nomes próprios de empresas, de produtos, de sistemas nem de certificações — mantenha "Microsoft", "Oracle Financials", "PMP", "Six Sigma" como estão. Nomes de instituições de ensino também ficam no original, mas lembre que a regra do campo "education" já manda omitir a instituição.
 
 1.1) COMPLETUDE OBRIGATÓRIA (REGRA CRÍTICA): Você DEVE incluir TODAS as experiências profissionais, TODOS os cursos, TODOS os idiomas, TODAS as formações e TODAS as outras atividades relevantes presentes no currículo original, SEM EXCEÇÃO. Inclua também estágios, trainees e cargos sem descrição de responsabilidades (nesse caso, devolva bullets como []). NUNCA agrupe, resuma, omita ou pule itens. Se o original lista 5 experiências, o JSON deve ter 5 (ou mais, se houver vários cargos na mesma empresa).
 
@@ -77,6 +77,10 @@ Regras de formatação OBRIGATÓRIAS (padrão Tailor) — siga TODAS sem exceç�
 3) PONTUAÇÃO DOS BULLETS (REGRA CRÍTICA): Em CADA cargo de "experience.bullets", todos os itens DEVEM terminar com ponto e vírgula ";", EXCETO o ÚLTIMO item do array, que DEVE terminar com ponto ".". A mesma regra se aplica ao array "courses". Não use outros sinais de pontuação no final.
 
 4) ITÁLICO PARA TERMOS EM INGLÊS (REGRA CRÍTICA): TODA palavra ou expressão em inglês/estrangeirismo no texto DEVE ser envolvida por asteriscos para itálico. Exemplos: *Business Partner*, *performance*, *feedback*, *turnover*, *endomarketing*, *compliance*, *LMS*, *headcount*, *onboarding*, *coaching*, *mindset*, *benchmarking*, *stakeholders*, *budget*, *forecast*, *KPI*, *core business*, *people analytics*, *soft skills*, *hard skills*, *home office*. Aplique em QUALQUER campo de texto (role, bullets, compensation, courses, etc.). NÃO marque siglas em português nem nomes próprios de empresas.
+
+4.1) O ITÁLICO MARCA TERMOS, NUNCA FRASES (REGRA CRÍTICA): o itálico vale para os termos que PERMANECEM em outro idioma depois da tradução da regra 1 — jargão que o mercado brasileiro usa em inglês por convenção (*turnover*, *compliance*), além de nomes de sistemas, produtos, ferramentas e certificações (*Power BI*, *Azure Data Factory*, *ERP Senior*, *AWS Certified Cloud Practitioner*, *ITIL Foundation*). Se o currículo original estiver em inglês, o texto traduzido é português comum e NÃO leva itálico: um bullet inteiro entre asteriscos está SEMPRE errado. Na dúvida, traduza e não marque.
+
+4.2) NUNCA use asteriscos no campo "company" — esse campo é renderizado sem interpretar itálico, então os asteriscos apareceriam literalmente no documento. O nome do empregador vai sempre sem marcação, mesmo sendo estrangeiro. (Citar a mesma empresa como fornecedor dentro de um bullet segue a regra 4.1 normalmente.)
 
 5) NÃO invente informações. Se um campo não existir no PDF, devolva string vazia "" ou array vazio [].
 
@@ -254,6 +258,17 @@ export const Route = createFileRoute("/api/generate-resume")({
             }
             if (e instanceof Anthropic.AuthenticationError) {
               return Response.json({ error: "Chave da API da Anthropic inválida." }, { status: 500 });
+            }
+            // 529: a API está sobrecarregada. O SDK já tentou de novo sozinho,
+            // então aqui só resta pedir para o usuário repetir.
+            if (
+              e instanceof Anthropic.APIError &&
+              (e.status === 529 || /overloaded/i.test(e.message))
+            ) {
+              return Response.json(
+                { error: "A IA está temporariamente sobrecarregada. Tente novamente em instantes." },
+                { status: 503 },
+              );
             }
             if (e instanceof Anthropic.APIError && /credit|balance/i.test(e.message)) {
               return Response.json(
