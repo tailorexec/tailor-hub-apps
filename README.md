@@ -89,18 +89,34 @@ BEGIN;
 ROLLBACK;   -- trocar por COMMIT quando passar sem erro
 ```
 
-### Verificação obrigatória pós-deploy
+### Sobre o cadastro no banco compartilhado
 
-O site tem o trigger `on_auth_user_created` em `auth.users`, que é quem cria a
-linha em `profiles`. Não foi possível confirmar se ele grava `status`. Se ele
-gravar `'approved'`, **qualquer pessoa que se cadastrar ganha acesso ao gerador
-sem aprovação** — a migration não consegue impedir isso, porque um valor
-explícito no INSERT ignora o DEFAULT da coluna.
-
-Depois do primeiro deploy, cadastre um usuário de teste em `/signup` e rode:
+A `public.handle_new_user()` do site é quem cria a linha em `profiles`:
 
 ```sql
--- Busca o email em auth.users, então funciona antes ou depois da migration
+INSERT INTO public.profiles (id, full_name, avatar_url) VALUES (...)
+```
+
+Dois pontos que moldaram a migration:
+
+1. **Não grava `email`.** Por isso o hub adiciona o trigger
+   `zz_hub_fill_profile_email`, que só faz `UPDATE` e tem o prefixo `zz_` para
+   disparar depois do `on_auth_user_created` (triggers rodam em ordem
+   alfabética). Um trigger do hub que fizesse `INSERT` competiria com esse aqui
+   e, como ele não usa `ON CONFLICT`, quebraria o cadastro com chave duplicada.
+
+2. **Não grava `status`** — o valor vem do `DEFAULT` da coluna, que era
+   `'approved'`. Ou seja, qualquer pessoa que se cadastrasse entrava aprovada e
+   ganhava o gerador. A migration força o `DEFAULT` para `'pending'`. Isso muda
+   o comportamento do site também: cadastros novos nascem `'pending'` lá
+   igualmente. É intencional — a falha passa a negar acesso em vez de conceder.
+   As linhas já existentes não são tocadas.
+
+### Verificação pós-deploy
+
+Cadastre um usuário de teste em `/signup` e confirme que o default pegou:
+
+```sql
 select u.email, p.status, p.created_at
   from public.profiles p
   join auth.users u on u.id = p.id
@@ -108,10 +124,8 @@ select u.email, p.status, p.created_at
  limit 3;
 ```
 
-- `pending` (ou `NULL`) → correto, o fluxo de aprovação funciona.
-- `approved` → **furo de segurança**. Corrija editando a função do trigger do
-  site para não gravar status, ou trocando a checagem do hub para uma coluna
-  própria. Não deixe em produção assim.
+O usuário novo tem que aparecer como `pending`. Se vier `approved`, a migration
+não foi aplicada.
 
 ## Estrutura
 

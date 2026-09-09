@@ -86,25 +86,33 @@ CREATE TRIGGER zz_hub_fill_profile_email
 -- como um cadastro NOVO chega: se o trigger do site gravar 'approved' por
 -- padrão, qualquer um que se cadastrasse ganharia acesso ao gerador sozinho.
 --
--- Se a coluna não tem DEFAULT, define 'pending'. Assim, um INSERT que omita
--- status passa a cair em 'pending' em vez de NULL, e a aprovação fica sendo
--- sempre um ato explícito de um admin. Se já houver DEFAULT, nada é alterado —
--- não se sobrepõe a uma decisão do site.
+-- A public.handle_new_user() do site insere em profiles SEM informar status:
 --
--- Isto NÃO cobre o caso do trigger do site gravar 'approved' explicitamente:
--- nesse caso o DEFAULT é ignorado. Ver a verificação pós-deploy no README.
+--   INSERT INTO public.profiles (id, full_name, avatar_url) VALUES (...)
+--
+-- Logo, o status de todo cadastro novo vem do DEFAULT da coluna. As duas linhas
+-- existentes estão 'approved' e não foram aprovadas manualmente, o que indica
+-- DEFAULT 'approved' — na prática, qualquer pessoa que se cadastre já entra
+-- aprovada e ganha acesso ao gerador.
+--
+-- Por isso o DEFAULT é forçado para 'pending', e não apenas definido quando
+-- ausente: aprovar passa a ser sempre um ato explícito de um admin em /admin.
+--
+-- MUDANÇA DE COMPORTAMENTO, ASSUMIDA DE PROPÓSITO: cadastros novos do site
+-- também passam a nascer 'pending'. A direção da falha é negar acesso, não
+-- conceder. As 2 linhas atuais continuam 'approved' — nada é reescrito.
 DO $$
+DECLARE
+  v_old text;
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-     WHERE table_schema = 'public' AND table_name = 'profiles'
-       AND column_name = 'status' AND column_default IS NOT NULL
-  ) THEN
-    ALTER TABLE public.profiles ALTER COLUMN status SET DEFAULT 'pending';
-    RAISE NOTICE 'profiles.status agora tem DEFAULT pending';
-  ELSE
-    RAISE NOTICE 'profiles.status já tinha DEFAULT — mantido como está';
-  END IF;
+  SELECT column_default INTO v_old
+    FROM information_schema.columns
+   WHERE table_schema = 'public' AND table_name = 'profiles'
+     AND column_name = 'status';
+
+  ALTER TABLE public.profiles ALTER COLUMN status SET DEFAULT 'pending';
+
+  RAISE NOTICE 'profiles.status DEFAULT: % -> ''pending''', COALESCE(v_old, '(nenhum)');
 END $$;
 
 -- ─── 2. generations: quota diária do gerador de currículo ───────────────────
