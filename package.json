@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "check:docx": "node --experimental-strip-types scripts/check-resume-docx.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
