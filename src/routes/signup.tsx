@@ -17,6 +17,7 @@ function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [confirmacaoPendente, setConfirmacaoPendente] = useState(false);
 
   useEffect(() => {
     if (!loading && session) navigate({ to: "/generator" });
@@ -29,7 +30,7 @@ function SignupPage() {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -42,8 +43,21 @@ function SignupPage() {
       toast({ title: "Erro ao cadastrar", description: error.message, variant: "destructive" });
       return;
     }
+
+    // Sem sessão significa que o projeto exige confirmação por e-mail. Navegar
+    // para /generator nesse caso joga o usuário no /login pelo guard de rota,
+    // o que parece erro. Então cada caso ganha o seu destino e sua mensagem.
+    if (!data.session) {
+      setConfirmacaoPendente(true);
+      toast({
+        title: "Confirme seu e-mail",
+        description: "Enviamos um link de confirmação. Depois disso, aguarde a aprovação de um administrador.",
+      });
+      return;
+    }
+
     toast({
-      title: "Cadastro enviado",
+      title: "Cadastro realizado",
       description: "Aguarde a aprovação de um administrador para acessar o gerador.",
     });
     navigate({ to: "/generator" });
@@ -56,6 +70,23 @@ function SignupPage() {
       </Link>
       <div className="w-full max-w-[420px] tailor-card">
         <div className="tailor-card-title">Criar conta</div>
+        {confirmacaoPendente ? (
+          <div className="mt-2 flex flex-col gap-4">
+            <p className="text-sm text-foreground">
+              Enviamos um link de confirmação para <strong>{email}</strong>.
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Confirme o e-mail para ativar a conta. Depois disso, um administrador precisa liberar
+              seu acesso ao gerador — você recebe o aviso quando isso acontecer.
+            </p>
+            <Link
+              to="/login"
+              className="text-center rounded-[10px] bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Ir para o login
+            </Link>
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
           <label className="flex flex-col gap-1.5 text-sm">
             <span className="font-medium text-foreground">Nome completo</span>
@@ -97,15 +128,20 @@ function SignupPage() {
             Cadastrar
           </button>
         </form>
-        <p className="text-center text-xs text-muted-foreground mt-5">
-          Já tem conta?{" "}
-          <Link to="/login" className="text-primary font-semibold hover:underline">
-            Entrar
-          </Link>
-        </p>
-        <p className="text-center text-[11px] text-muted-foreground mt-3 px-2">
-          Após o cadastro, sua conta passará por aprovação de um administrador.
-        </p>
+        )}
+        {!confirmacaoPendente && (
+          <>
+            <p className="text-center text-xs text-muted-foreground mt-5">
+              Já tem conta?{" "}
+              <Link to="/login" className="text-primary font-semibold hover:underline">
+                Entrar
+              </Link>
+            </p>
+            <p className="text-center text-[11px] text-muted-foreground mt-3 px-2">
+              Após o cadastro, sua conta passará por aprovação de um administrador.
+            </p>
+          </>
+        )}
       </div>
     </div>
   );
