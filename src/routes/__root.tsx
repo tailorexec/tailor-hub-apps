@@ -34,7 +34,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   console.error(error);
   const router = useRouter();
 
@@ -76,16 +76,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Tailor Hub" },
       { name: "description", content: "Resume Replication generates resumes from provided data, allowing for custom branding and internal use notes." },
-      { name: "author", content: "Lovable" },
+      { name: "author", content: "Tailor Executive Search" },
       { property: "og:title", content: "Gerador de Currículo" },
       { property: "og:description", content: "Resume Replication generates resumes from provided data, allowing for custom branding and internal use notes." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@tailorexec" },
       { name: "twitter:title", content: "Gerador de Currículo" },
       { name: "twitter:description", content: "Resume Replication generates resumes from provided data, allowing for custom branding and internal use notes." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/qZ2xUqHHXgPyoZ1ffpCo7i54dx82/social-images/social-1778771854928-logo_tailor_horinzontal_2.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/qZ2xUqHHXgPyoZ1ffpCo7i54dx82/social-images/social-1778771854928-logo_tailor_horinzontal_2.webp" },
+      { property: "og:image", content: "https://hub.tailorexec.com.br/og-image.png" },
+      { name: "twitter:image", content: "https://hub.tailorexec.com.br/og-image.png" },
     ],
     links: [
       {
@@ -102,7 +102,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>

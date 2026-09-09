@@ -7,8 +7,10 @@ import { toast } from "@/hooks/use-toast";
 import logo from "@/assets/tailor-logo.png";
 
 export const Route = createFileRoute("/login")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    redirect: typeof search.redirect === "string" ? search.redirect : "/generator",
+  // `redirect` is optional: only the _authenticated guard sets it. Sign-out and
+  // the signup link navigate to /login with no search params.
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
+    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
   }),
   component: LoginPage,
 });
@@ -16,14 +18,14 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const navigate = useNavigate();
   const { session, loading } = useAuth();
-  const { redirect } = Route.useSearch();
+  const { redirect: redirectTo = "/generator" } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && session) navigate({ to: redirect });
-  }, [loading, session, navigate, redirect]);
+    if (!loading && session) navigate({ to: redirectTo });
+  }, [loading, session, navigate, redirectTo]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -34,7 +36,7 @@ function LoginPage() {
       toast({ title: "Erro ao entrar", description: error.message, variant: "destructive" });
       return;
     }
-    navigate({ to: redirect });
+    navigate({ to: redirectTo });
   };
 
   return (

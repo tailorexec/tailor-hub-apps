@@ -1,0 +1,15 @@
+# Normaliza finais de linha: o repositório guarda LF e o checkout usa LF em
+# qualquer sistema. Sem isso, o checkout no Windows vira CRLF e o
+# eslint-plugin-prettier acusa erro em todas as linhas de todos os arquivos.
+* text=auto eol=lf
+
+# Binários — nunca converter
+*.png binary
+*.ico binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+*.docx binary

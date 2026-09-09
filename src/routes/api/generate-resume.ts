@@ -1,3 +1,4 @@
+import Anthropic from "@anthropic-ai/sdk";
 import { createFileRoute } from "@tanstack/react-router";
 import { extractText, getDocumentProxy } from "unpdf";
 import {
@@ -33,6 +34,46 @@ interface ResumeData {
   courses?: string[];
   other_activities?: string[];
 }
+
+// Structured-output contract: Claude is constrained to emit exactly this shape.
+const RESUME_JSON_SCHEMA = {
+  type: "object",
+  properties: {
+    name: { type: "string" },
+    location: { type: "string" },
+    compensation: { type: "string" },
+    education: { type: "array", items: { type: "string" } },
+    experience: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          company: { type: "string" },
+          period: { type: "string" },
+          role: { type: "string" },
+          location: { type: "string" },
+          bullets: { type: "array", items: { type: "string" } },
+        },
+        required: ["company", "period", "role", "location", "bullets"],
+        additionalProperties: false,
+      },
+    },
+    languages: { type: "array", items: { type: "string" } },
+    courses: { type: "array", items: { type: "string" } },
+    other_activities: { type: "array", items: { type: "string" } },
+  },
+  required: [
+    "name",
+    "location",
+    "compensation",
+    "education",
+    "experience",
+    "languages",
+    "courses",
+    "other_activities",
+  ],
+  additionalProperties: false,
+};
 
 const SYSTEM_PROMPT = `Você é um especialista em recrutamento da consultoria "Tailor" e estrutura currículos no padrão Tailor.
 Receba o texto bruto extraído de um PDF de currículo e devolva APENAS um JSON válido (sem markdown, sem comentários) seguindo este schema:
@@ -202,44 +243,74 @@ export const Route = createFileRoute("/api/generate-resume")({
             );
           }
 
-          // 2) Ask Lovable AI to structure it
-          const apiKey = process.env.LOVABLE_API_KEY;
+          // 2) Ask Claude to structure it
+          const apiKey = process.env.ANTHROPIC_API_KEY;
           if (!apiKey) {
-            return Response.json({ error: "LOVABLE_API_KEY não configurada." }, { status: 500 });
+            return Response.json({ error: "ANTHROPIC_API_KEY não configurada." }, { status: 500 });
           }
 
-          const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: "google/gemini-2.5-flash",
-              messages: [
-                { role: "system", content: SYSTEM_PROMPT },
-                { role: "user", content: pdfText.slice(0, 60000) },
-              ],
-              response_format: { type: "json_object" },
-              max_tokens: 16000,
-              temperature: 0.2,
-            }),
-          });
+          const anthropic = new Anthropic({ apiKey });
 
-          if (!aiRes.ok) {
-            const errText = await aiRes.text();
-            console.error("AI error:", aiRes.status, errText);
-            if (aiRes.status === 429) {
-              return Response.json({ error: "Limite de uso atingido. Tente novamente em instantes." }, { status: 429 });
+          let aiMessage: Anthropic.Message;
+          try {
+            // Streamed: a long CV plus adaptive thinking can outlast a plain request timeout.
+            aiMessage = await anthropic.messages
+              .stream({
+                model: process.env.ANTHROPIC_MODEL || "claude-opus-5",
+                max_tokens: 32000,
+                system: SYSTEM_PROMPT,
+                messages: [{ role: "user", content: pdfText.slice(0, 60000) }],
+                output_config: {
+                  format: { type: "json_schema", schema: RESUME_JSON_SCHEMA },
+                  // Extraction under fixed formatting rules — medium is the
+                  // cost/quality sweet spot here. Override with ANTHROPIC_EFFORT.
+                  effort: (process.env.ANTHROPIC_EFFORT || "medium") as
+                    | "low"
+                    | "medium"
+                    | "high"
+                    | "xhigh"
+                    | "max",
+                },
+              })
+              .finalMessage();
+          } catch (e) {
+            console.error("Anthropic error:", e);
+            if (e instanceof Anthropic.RateLimitError) {
+              return Response.json(
+                { error: "Limite de uso da IA atingido. Tente novamente em instantes." },
+                { status: 429 },
+              );
             }
-            if (aiRes.status === 402) {
-              return Response.json({ error: "Créditos de IA esgotados. Adicione créditos no Lovable." }, { status: 402 });
+            if (e instanceof Anthropic.AuthenticationError) {
+              return Response.json({ error: "Chave da API da Anthropic inválida." }, { status: 500 });
+            }
+            if (e instanceof Anthropic.APIError && /credit|balance/i.test(e.message)) {
+              return Response.json(
+                { error: "Créditos da Anthropic esgotados. Recarregue o saldo da conta." },
+                { status: 402 },
+              );
             }
             return Response.json({ error: "Falha ao processar com IA." }, { status: 502 });
           }
 
-          const aiJson = await aiRes.json();
-          const raw: string = aiJson?.choices?.[0]?.message?.content ?? "{}";
+          if (aiMessage.stop_reason === "refusal") {
+            console.error("AI refused:", aiMessage.stop_details);
+            return Response.json(
+              { error: "A IA recusou processar este documento. Verifique o conteúdo do arquivo." },
+              { status: 422 },
+            );
+          }
+          if (aiMessage.stop_reason === "max_tokens") {
+            return Response.json(
+              { error: "O currículo é longo demais para ser processado de uma vez." },
+              { status: 422 },
+            );
+          }
+
+          const raw = aiMessage.content
+            .filter((b): b is Anthropic.TextBlock => b.type === "text")
+            .map((b) => b.text)
+            .join("");
           let parsed: ResumeData;
           try {
             parsed = safeParseResumeJson(raw);
