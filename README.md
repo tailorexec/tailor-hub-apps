@@ -100,7 +100,12 @@ explícito no INSERT ignora o DEFAULT da coluna.
 Depois do primeiro deploy, cadastre um usuário de teste em `/signup` e rode:
 
 ```sql
-select email, status from public.profiles order by created_at desc limit 1;
+-- Busca o email em auth.users, então funciona antes ou depois da migration
+select u.email, p.status, p.created_at
+  from public.profiles p
+  join auth.users u on u.id = p.id
+ order by p.created_at desc
+ limit 3;
 ```
 
 - `pending` (ou `NULL`) → correto, o fluxo de aprovação funciona.
