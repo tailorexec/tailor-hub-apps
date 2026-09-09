@@ -51,7 +51,9 @@ function SignupPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-10">
-      <img src={logo} alt="Tailor" className="h-9 w-auto mb-8" />
+      <Link to="/" title="Ir para o início" aria-label="Ir para o início" className="mb-8 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+        <img src={logo} alt="Tailor" className="h-9 w-auto" />
+      </Link>
       <div className="w-full max-w-[420px] tailor-card">
         <div className="tailor-card-title">Criar conta</div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import logo from "@/assets/tailor-logo.png";
@@ -122,7 +122,9 @@ function NpsFormPage() {
     <div className="min-h-screen bg-background">
       <header className="w-full border-b border-border bg-card">
         <div className="max-w-[820px] mx-auto px-6 h-20 flex items-center">
-          <img src={logo} alt="Tailor" className="h-8 w-auto" />
+          <Link to="/" title="Ir para o início" aria-label="Ir para o início" className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            <img src={logo} alt="Tailor" className="h-8 w-auto" />
+          </Link>
         </div>
       </header>
 

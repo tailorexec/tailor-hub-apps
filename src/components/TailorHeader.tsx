@@ -1,5 +1,7 @@
-import logo from "@/assets/tailor-logo.png";
+import { Link } from "@tanstack/react-router";
 import { LogOut, ShieldCheck } from "lucide-react";
+
+import logo from "@/assets/tailor-logo.png";
 
 interface TailorHeaderProps {
   userEmail?: string | null;
@@ -12,7 +14,9 @@ const TailorHeader = ({ userEmail, isAdmin, onAdmin, onSignOut }: TailorHeaderPr
   return (
     <header className="w-full border-b border-border bg-card">
       <div className="max-w-[1200px] mx-auto px-6 md:px-10 h-20 flex items-center justify-between gap-4">
-        <img src={logo} alt="Tailor — made for people" className="h-8 md:h-9 w-auto" />
+        <Link to="/" title="Ir para o início" aria-label="Ir para o início" className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+          <img src={logo} alt="Tailor — made for people" className="h-8 md:h-9 w-auto" />
+        </Link>
         <div className="flex items-center gap-3">
           <span className="hidden md:inline-flex items-center rounded-full border border-border px-4 py-1.5 text-[11px] font-bold tracking-[0.18em] text-foreground/80">
             PADRÃO TAILOR · VERSÃO 2026
