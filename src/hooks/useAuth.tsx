@@ -8,7 +8,8 @@ interface Profile {
   id: string;
   email: string;
   full_name: string | null;
-  status: ProfileStatus;
+  /** Permissão do HUB. `profiles.status` é do site (autor do blog) — não usar. */
+  hub_status: ProfileStatus;
 }
 
 interface AuthContextValue {
@@ -31,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadExtras = async (uid: string) => {
     const [{ data: prof }, { data: roles }] = await Promise.all([
-      supabase.from("profiles").select("id,email,full_name,status").eq("id", uid).maybeSingle(),
+      supabase.from("profiles").select("id,email,full_name,hub_status").eq("id", uid).maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", uid),
     ]);
     setProfile((prof as Profile) ?? null);

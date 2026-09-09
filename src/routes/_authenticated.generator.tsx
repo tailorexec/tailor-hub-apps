@@ -43,9 +43,9 @@ function Index() {
   };
 
   useEffect(() => {
-    if (profile?.status === "approved") fetchUsage();
+    if (profile?.hub_status === "approved") fetchUsage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.status]);
+  }, [profile?.hub_status]);
 
   const toTailorFilename = (rawName?: string | null) => {
     const decoded = rawName ? decodeURIComponent(rawName.replace(/^"|"$/g, "").trim()) : "";
@@ -118,7 +118,7 @@ function Index() {
   };
 
   // Pending / rejected gate
-  if (profile && profile.status !== "approved") {
+  if (profile && profile.hub_status !== "approved") {
     return (
       <div className="flex flex-col min-h-screen bg-background">
         <TailorHeader
@@ -132,7 +132,7 @@ function Index() {
         />
         <main className="flex-1 w-full max-w-[640px] mx-auto px-4 md:px-6 py-16">
           <div className="tailor-card text-center">
-            {profile.status === "pending" ? (
+            {profile.hub_status === "pending" ? (
               <>
                 <div className="mx-auto w-12 h-12 rounded-full bg-[#fffbf0] border-[1.5px] border-[#f0d060] flex items-center justify-center mb-4">
                   <Clock className="w-5 h-5 text-[#8a6a00]" />

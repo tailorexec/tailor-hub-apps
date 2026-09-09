@@ -144,7 +144,7 @@ export const Route = createFileRoute("/api/generate-resume")({
           }
 
           const profRes = await fetch(
-            `${supabaseUrl}/rest/v1/profiles?id=eq.${userId}&select=status`,
+            `${supabaseUrl}/rest/v1/profiles?id=eq.${userId}&select=hub_status`,
             {
               headers: {
                 apikey: serviceKey,
@@ -153,8 +153,8 @@ export const Route = createFileRoute("/api/generate-resume")({
               },
             },
           );
-          const profArr = (await profRes.json()) as Array<{ status: string }>;
-          if (!Array.isArray(profArr) || profArr[0]?.status !== "approved") {
+          const profArr = (await profRes.json()) as Array<{ hub_status: string }>;
+          if (!Array.isArray(profArr) || profArr[0]?.hub_status !== "approved") {
             return Response.json(
               { error: "Cadastro ainda não aprovado por um administrador." },
               { status: 403 },

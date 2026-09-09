@@ -93,28 +93,43 @@ export type Database = {
         Relationships: []
       }
       profiles: {
+        // Tabela compartilhada com o site institucional.
+        // `status`     -> do SITE (aprovação de autor do blog). O hub não usa.
+        // `hub_status` -> do HUB (libera o gerador). O site não usa.
         Row: {
+          avatar_url: string | null
+          bio: string | null
           created_at: string
-          email: string
+          email: string | null
           full_name: string | null
+          hub_status: Database["public"]["Enums"]["profile_status"]
           id: string
-          status: Database["public"]["Enums"]["profile_status"]
+          job_title: string | null
+          status: string | null
           updated_at: string
         }
         Insert: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string
-          email: string
+          email?: string | null
           full_name?: string | null
+          hub_status?: Database["public"]["Enums"]["profile_status"]
           id: string
-          status?: Database["public"]["Enums"]["profile_status"]
+          job_title?: string | null
+          status?: string | null
           updated_at?: string
         }
         Update: {
+          avatar_url?: string | null
+          bio?: string | null
           created_at?: string
-          email?: string
+          email?: string | null
           full_name?: string | null
+          hub_status?: Database["public"]["Enums"]["profile_status"]
           id?: string
-          status?: Database["public"]["Enums"]["profile_status"]
+          job_title?: string | null
+          status?: string | null
           updated_at?: string
         }
         Relationships: []

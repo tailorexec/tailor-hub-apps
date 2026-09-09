@@ -11,9 +11,10 @@ type ProfileStatus = "pending" | "approved" | "rejected";
 
 interface ProfileRow {
   id: string;
-  email: string;
+  email: string | null;
   full_name: string | null;
-  status: ProfileStatus;
+  /** Permissão do HUB. `profiles.status` é do site (autor do blog). */
+  hub_status: ProfileStatus;
   created_at: string;
 }
 
@@ -35,7 +36,7 @@ function AdminPage() {
     setFetching(true);
     const { data, error } = await supabase
       .from("profiles")
-      .select("id,email,full_name,status,created_at")
+      .select("id,email,full_name,hub_status,created_at")
       .order("created_at", { ascending: false });
     setFetching(false);
     if (error) {
@@ -106,7 +107,7 @@ function AdminPage() {
 
   const updateStatus = async (id: string, status: ProfileStatus) => {
     setBusyId(id);
-    const { error } = await supabase.from("profiles").update({ status }).eq("id", id);
+    const { error } = await supabase.from("profiles").update({ hub_status: status }).eq("id", id);
     setBusyId(null);
     if (error) {
       toast({ title: "Erro", description: error.message, variant: "destructive" });
@@ -116,11 +117,11 @@ function AdminPage() {
     setProfiles((prev) => prev.map((p) => (p.id === id ? { ...p, status } : p)));
   };
 
-  const filtered = profiles.filter((p) => p.status === tab);
+  const filtered = profiles.filter((p) => p.hub_status === tab);
   const counts = {
-    pending: profiles.filter((p) => p.status === "pending").length,
-    approved: profiles.filter((p) => p.status === "approved").length,
-    rejected: profiles.filter((p) => p.status === "rejected").length,
+    pending: profiles.filter((p) => p.hub_status === "pending").length,
+    approved: profiles.filter((p) => p.hub_status === "approved").length,
+    rejected: profiles.filter((p) => p.hub_status === "rejected").length,
   };
 
   const tabs: { key: ProfileStatus; label: string }[] = [
@@ -211,7 +212,7 @@ function AdminPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    {p.status === "approved" && (
+                    {p.hub_status === "approved" && (
                       <div className="text-right">
                         <p className="text-lg font-bold text-foreground leading-none">{genCounts[p.id] ?? 0}</p>
                         <p className="text-[10px] uppercase tracking-wide text-muted-foreground mt-0.5">
@@ -220,7 +221,7 @@ function AdminPage() {
                       </div>
                     )}
                     <div className="flex gap-2">
-                      {p.status !== "approved" && (
+                      {p.hub_status !== "approved" && (
                         <button
                           disabled={busyId === p.id}
                           onClick={() => updateStatus(p.id, "approved")}
@@ -230,7 +231,7 @@ function AdminPage() {
                           Aprovar
                         </button>
                       )}
-                      {p.status !== "rejected" && (
+                      {p.hub_status !== "rejected" && (
                         <button
                           disabled={busyId === p.id}
                           onClick={() => updateStatus(p.id, "rejected")}

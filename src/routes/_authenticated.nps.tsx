@@ -123,7 +123,7 @@ function NpsPage() {
       rows.forEach((r) => {
         const p = map.get(r.user_id);
         if (p) {
-          r.email = p.email;
+          r.email = p.email ?? undefined;
           r.full_name = p.full_name;
         }
       });
