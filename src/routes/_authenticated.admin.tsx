@@ -114,7 +114,9 @@ function AdminPage() {
       return;
     }
     toast({ title: status === "approved" ? "Cadastro aprovado" : "Cadastro recusado" });
-    setProfiles((prev) => prev.map((p) => (p.id === id ? { ...p, status } : p)));
+    // A lista é filtrada por hub_status: atualizar qualquer outro campo deixa a
+    // linha parada na aba anterior até o próximo refresh.
+    setProfiles((prev) => prev.map((p) => (p.id === id ? { ...p, hub_status: status } : p)));
   };
 
   const filtered = profiles.filter((p) => p.hub_status === tab);
