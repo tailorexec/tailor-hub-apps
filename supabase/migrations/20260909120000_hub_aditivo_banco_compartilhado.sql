@@ -51,26 +51,38 @@ BEGIN
   END IF;
 END $$;
 
--- O cadastro do hub chama apenas auth.signUp(): a linha em profiles precisa vir
--- de um trigger. Este é um UPSERT, então convive com um trigger que o site já
--- tenha — se a linha já existir, só completa email/full_name e NÃO mexe em
--- status. Novos usuários entram como 'pending': o hub só libera acesso com
--- status = 'approved', aprovado por um admin na tela /admin.
-CREATE OR REPLACE FUNCTION public.hub_handle_new_user()
+-- O cadastro do hub chama apenas auth.signUp(), então a linha de profiles vem de
+-- trigger. O site JÁ tem o trigger `on_auth_user_created`, que é quem cria a
+-- linha — este aqui apenas COMPLEMENTA o email, que é coluna nova e portanto
+-- nenhuma função existente preenche.
+--
+-- Dois cuidados deliberados:
+--   1) Nome com prefixo "zz_": triggers do Postgres disparam em ordem
+--      alfabética. "zz_" garante que este rode DEPOIS de on_auth_user_created,
+--      quando a linha do profile já existe.
+--   2) Só faz UPDATE, nunca INSERT. Um INSERT aqui competiria com o trigger do
+--      site e, se a função dele não usar ON CONFLICT, quebraria o cadastro
+--      inteiro com erro de chave duplicada.
+CREATE OR REPLACE FUNCTION public.zz_hub_fill_profile_email()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
-  INSERT INTO public.profiles (id, email, full_name, status)
-  VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data->>'full_name', 'pending')
-  ON CONFLICT (id) DO UPDATE
-     SET email     = COALESCE(profiles.email, EXCLUDED.email),
-         full_name = COALESCE(profiles.full_name, EXCLUDED.full_name);
+  UPDATE public.profiles
+     SET email = NEW.email
+   WHERE id = NEW.id
+     AND email IS DISTINCT FROM NEW.email;
   RETURN NEW;
 END $$;
 
-DROP TRIGGER IF EXISTS hub_on_auth_user_created ON auth.users;
-CREATE TRIGGER hub_on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.hub_handle_new_user();
+DROP TRIGGER IF EXISTS hub_on_auth_user_created ON auth.users;  -- versão anterior
+DROP TRIGGER IF EXISTS zz_hub_fill_profile_email ON auth.users;
+CREATE TRIGGER zz_hub_fill_profile_email
+  AFTER INSERT OR UPDATE OF email ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.zz_hub_fill_profile_email();
+
+-- Rede de segurança: se o trigger do site não preencher status, o usuário novo
+-- ficaria com status NULL. O hub exige status = 'approved' para liberar acesso,
+-- e NULL <> 'approved' — ou seja, o padrão já é negar. Nenhum ajuste
+-- necessário aqui; a aprovação é feita por um admin na tela /admin.
 
 -- ─── 2. generations: quota diária do gerador de currículo ───────────────────
 
