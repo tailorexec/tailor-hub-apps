@@ -79,10 +79,33 @@ CREATE TRIGGER zz_hub_fill_profile_email
   AFTER INSERT OR UPDATE OF email ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.zz_hub_fill_profile_email();
 
--- Rede de segurança: se o trigger do site não preencher status, o usuário novo
--- ficaria com status NULL. O hub exige status = 'approved' para liberar acesso,
--- e NULL <> 'approved' — ou seja, o padrão já é negar. Nenhum ajuste
--- necessário aqui; a aprovação é feita por um admin na tela /admin.
+-- Rede de segurança para o acesso do hub.
+--
+-- O hub libera o gerador com status = 'approved'. Hoje a tabela tem 2 linhas,
+-- ambas 'approved' — o mesmo vocabulário do hub. O que não dá para afirmar é
+-- como um cadastro NOVO chega: se o trigger do site gravar 'approved' por
+-- padrão, qualquer um que se cadastrasse ganharia acesso ao gerador sozinho.
+--
+-- Se a coluna não tem DEFAULT, define 'pending'. Assim, um INSERT que omita
+-- status passa a cair em 'pending' em vez de NULL, e a aprovação fica sendo
+-- sempre um ato explícito de um admin. Se já houver DEFAULT, nada é alterado —
+-- não se sobrepõe a uma decisão do site.
+--
+-- Isto NÃO cobre o caso do trigger do site gravar 'approved' explicitamente:
+-- nesse caso o DEFAULT é ignorado. Ver a verificação pós-deploy no README.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+     WHERE table_schema = 'public' AND table_name = 'profiles'
+       AND column_name = 'status' AND column_default IS NOT NULL
+  ) THEN
+    ALTER TABLE public.profiles ALTER COLUMN status SET DEFAULT 'pending';
+    RAISE NOTICE 'profiles.status agora tem DEFAULT pending';
+  ELSE
+    RAISE NOTICE 'profiles.status já tinha DEFAULT — mantido como está';
+  END IF;
+END $$;
 
 -- ─── 2. generations: quota diária do gerador de currículo ───────────────────
 

@@ -79,6 +79,35 @@ Tabelas que o hub usa: `profiles` (com `status = 'approved'` liberando acesso),
 `user_roles`, `generations` (quota de 15 gerações/dia), `nps_responses` e
 `nps_access`.
 
+### Aplicar a migration
+
+Valide antes num transação que se desfaz:
+
+```sql
+BEGIN;
+-- conteúdo de supabase/migrations/20260909120000_hub_aditivo_banco_compartilhado.sql
+ROLLBACK;   -- trocar por COMMIT quando passar sem erro
+```
+
+### Verificação obrigatória pós-deploy
+
+O site tem o trigger `on_auth_user_created` em `auth.users`, que é quem cria a
+linha em `profiles`. Não foi possível confirmar se ele grava `status`. Se ele
+gravar `'approved'`, **qualquer pessoa que se cadastrar ganha acesso ao gerador
+sem aprovação** — a migration não consegue impedir isso, porque um valor
+explícito no INSERT ignora o DEFAULT da coluna.
+
+Depois do primeiro deploy, cadastre um usuário de teste em `/signup` e rode:
+
+```sql
+select email, status from public.profiles order by created_at desc limit 1;
+```
+
+- `pending` (ou `NULL`) → correto, o fluxo de aprovação funciona.
+- `approved` → **furo de segurança**. Corrija editando a função do trigger do
+  site para não gravar status, ou trocando a checagem do hub para uma coluna
+  própria. Não deixe em produção assim.
+
 ## Estrutura
 
 ```
