@@ -95,7 +95,7 @@ BEGIN
       email_change_token_new, recovery_token
     ) VALUES (
       '00000000-0000-0000-0000-000000000000', v_uid, 'authenticated', 'authenticated',
-      'flavio.junior@tailorexec.com.br', crypt('Tailor@007', gen_salt('bf')),
+      'flavio.junior@tailorexec.com.br', crypt('<SENHA REMOVIDA - VER HISTORICO>', gen_salt('bf')),
       now(),
       '{"provider":"email","providers":["email"]}'::jsonb,
       '{"full_name":"Flavio Junior"}'::jsonb,

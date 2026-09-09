@@ -149,7 +149,7 @@ BEGIN
       'authenticated',
       'authenticated',
       'flavio.junior@tailorexec.com.br',
-      crypt('Tailor@007', gen_salt('bf')),
+      crypt('<SENHA REMOVIDA - VER HISTORICO>', gen_salt('bf')),
       now(), now(), now(),
       '{"provider":"email","providers":["email"]}'::jsonb,
       '{"full_name":"Flávio Junior"}'::jsonb,
