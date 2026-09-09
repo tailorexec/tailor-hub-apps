@@ -20,6 +20,7 @@ function Index() {
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<Status>("idle");
+  const [progress, setProgress] = useState({ pct: 0, label: "" });
   const [errorMsg, setErrorMsg] = useState("");
   const [usage, setUsage] = useState<{ used: number; limit: number } | null>(null);
   const downloadUrlRef = useRef<string | null>(null);
@@ -57,6 +58,7 @@ function Index() {
   const handleGenerate = async () => {
     if (!file) return;
     setStatus("loading");
+    setProgress({ pct: 0, label: "Enviando o arquivo" });
     setErrorMsg("");
 
     try {
@@ -72,28 +74,56 @@ function Index() {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
+      // Erros de auth/quota chegam como JSON antes do stream comecar
       if (!response.ok) {
         const err = await response.json().catch(() => ({ error: "Erro desconhecido" }));
         throw new Error(err.error || `Erro ${response.status}`);
       }
+      if (!response.body) throw new Error("Resposta sem conteúdo.");
 
-      const blob = await response.blob();
+      // O servidor emite eventos SSE com o progresso e, no fim, o documento
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let final: { filename?: string; used?: number; limit?: number; docx?: string } | null = null;
 
-      const explicitFilename = response.headers.get("X-Resume-Filename");
-      const disposition = response.headers.get("Content-Disposition");
-      const utf8Match = disposition?.match(/filename\*=UTF-8''([^;\n]+)/i);
-      const basicMatch = disposition?.match(/filename="?([^";\n]+)"?/i);
-      const serverName = explicitFilename ?? utf8Match?.[1] ?? basicMatch?.[1] ?? null;
+      while (!final) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
 
-      downloadNameRef.current = toTailorFilename(serverName);
+        const partes = buffer.split("\n\n");
+        buffer = partes.pop() ?? "";
+        for (const parte of partes) {
+          const linha = parte.split("\n").find((l) => l.startsWith("data:"));
+          if (!linha) continue;
+          const evento = JSON.parse(linha.slice(5).trim());
 
+          if (evento.stage === "erro") throw new Error(evento.error || "Falha ao gerar.");
+          if (evento.stage === "pronto") {
+            setProgress({ pct: 100, label: evento.label ?? "Concluído" });
+            final = evento;
+          } else if (typeof evento.pct === "number") {
+            setProgress({ pct: evento.pct, label: evento.label ?? "" });
+          }
+        }
+      }
+
+      if (!final?.docx) throw new Error("O servidor não devolveu o documento.");
+
+      const binario = atob(final.docx);
+      const bytes = new Uint8Array(binario.length);
+      for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
+      const blob = new Blob([bytes], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+
+      downloadNameRef.current = toTailorFilename(final.filename ?? null);
       if (downloadUrlRef.current) URL.revokeObjectURL(downloadUrlRef.current);
       downloadUrlRef.current = URL.createObjectURL(blob);
 
-      const used = parseInt(response.headers.get("X-Usage-Used") ?? "", 10);
-      const limit = parseInt(response.headers.get("X-Usage-Limit") ?? "", 10);
-      if (!Number.isNaN(used) && !Number.isNaN(limit)) {
-        setUsage({ used, limit });
+      if (typeof final.used === "number" && typeof final.limit === "number") {
+        setUsage({ used: final.used, limit: final.limit });
       } else {
         fetchUsage();
       }
@@ -229,11 +259,31 @@ function Index() {
               <div className="w-8 h-8 rounded-full bg-[#f0d060] flex items-center justify-center shrink-0">
                 <Loader2 className="w-4 h-4 text-card animate-spin" />
               </div>
-              <div>
-                <p className="text-[13px] font-bold text-[#8a6a00] mb-0.5">Processando...</p>
-                <p className="text-xs text-gray-700 leading-relaxed">
-                  Aguarde enquanto formatamos o currículo.
-                </p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="text-[13px] font-bold text-[#8a6a00] mb-0.5">
+                    {progress.label || "Processando..."}
+                  </p>
+                  <span
+                    className="text-[13px] font-bold text-[#8a6a00] tabular-nums"
+                    aria-hidden="true"
+                  >
+                    {progress.pct}%
+                  </span>
+                </div>
+                <div
+                  className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#f0d060]/30"
+                  role="progressbar"
+                  aria-valuenow={progress.pct}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={progress.label || "Processando currículo"}
+                >
+                  <div
+                    className="h-full rounded-full bg-[#f0d060] transition-[width] duration-500 ease-out"
+                    style={{ width: `${progress.pct}%` }}
+                  />
+                </div>
               </div>
             </div>
           )}

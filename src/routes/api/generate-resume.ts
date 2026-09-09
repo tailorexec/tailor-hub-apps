@@ -175,157 +175,204 @@ export const Route = createFileRoute("/api/generate-resume")({
             );
           }
 
-          // 1) Extrai o texto bruto (PDF, DOC, DOCX ou TXT)
+          // A partir daqui a resposta é um stream de eventos (SSE) com o
+          // progresso. As checagens acima continuam devolvendo erro HTTP normal
+          // porque são instantâneas — só o trabalho longo vira stream.
           const buf = new Uint8Array(await pdf.arrayBuffer());
-          const { text: pdfText } = await extractResumeText(buf, pdf.name, pdf.type);
+          const fileName = pdf.name;
+          const fileType = pdf.type;
 
-          if (!pdfText) {
-            return Response.json(
-              { error: "Não foi possível extrair texto do arquivo enviado." },
-              { status: 422 },
-            );
-          }
+          const encoder = new TextEncoder();
+          const stream = new ReadableStream<Uint8Array>({
+            async start(controller) {
+              let fechado = false;
+              const send = (obj: Record<string, unknown>) => {
+                if (fechado) return;
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
+              };
+              const fail = (error: string) => {
+                send({ stage: "erro", error });
+                fechado = true;
+                controller.close();
+              };
 
-          // 2) Ask Claude to structure it
-          const apiKey = process.env.ANTHROPIC_API_KEY;
-          if (!apiKey) {
-            return Response.json({ error: "ANTHROPIC_API_KEY não configurada." }, { status: 500 });
-          }
+              try {
+                // 1) Leitura do arquivo
+                send({ stage: "lendo", pct: 4, label: "Lendo o arquivo" });
+                const { text: pdfText } = await extractResumeText(buf, fileName, fileType);
+                if (!pdfText) {
+                  return fail("Não foi possível extrair texto do arquivo enviado.");
+                }
 
-          const anthropic = new Anthropic({ apiKey });
+                // 2) Estruturação pela IA
+                const apiKey = process.env.ANTHROPIC_API_KEY;
+                if (!apiKey) return fail("ANTHROPIC_API_KEY não configurada.");
 
-          let aiMessage: Anthropic.Message;
-          try {
-            // Streamed: a long CV plus adaptive thinking can outlast a plain request timeout.
-            aiMessage = await anthropic.messages
-              .stream({
-                model: process.env.ANTHROPIC_MODEL || "claude-opus-5",
-                max_tokens: 32000,
-                system: SYSTEM_PROMPT,
-                messages: [{ role: "user", content: pdfText.slice(0, 60000) }],
-                output_config: {
-                  format: { type: "json_schema", schema: RESUME_JSON_SCHEMA },
-                  // Extraction under fixed formatting rules — medium is the
-                  // cost/quality sweet spot here. Override with ANTHROPIC_EFFORT.
-                  effort: (process.env.ANTHROPIC_EFFORT || "medium") as
-                    | "low"
-                    | "medium"
-                    | "high"
-                    | "xhigh"
-                    | "max",
-                },
-              })
-              .finalMessage();
-          } catch (e) {
-            console.error("Anthropic error:", e);
-            if (e instanceof Anthropic.RateLimitError) {
-              return Response.json(
-                { error: "Limite de uso da IA atingido. Tente novamente em instantes." },
-                { status: 429 },
-              );
-            }
-            if (e instanceof Anthropic.AuthenticationError) {
-              return Response.json({ error: "Chave da API da Anthropic inválida." }, { status: 500 });
-            }
-            // 529: a API está sobrecarregada. O SDK já tentou de novo sozinho,
-            // então aqui só resta pedir para o usuário repetir.
-            if (
-              e instanceof Anthropic.APIError &&
-              (e.status === 529 || /overloaded/i.test(e.message))
-            ) {
-              return Response.json(
-                { error: "A IA está temporariamente sobrecarregada. Tente novamente em instantes." },
-                { status: 503 },
-              );
-            }
-            if (e instanceof Anthropic.APIError && /credit|balance/i.test(e.message)) {
-              return Response.json(
-                { error: "Créditos da Anthropic esgotados. Recarregue o saldo da conta." },
-                { status: 402 },
-              );
-            }
-            return Response.json({ error: "Falha ao processar com IA." }, { status: 502 });
-          }
+                send({ stage: "ia", pct: 12, label: "Analisando o currículo" });
+                const anthropic = new Anthropic({ apiKey });
 
-          if (aiMessage.stop_reason === "refusal") {
-            console.error("AI refused:", aiMessage.stop_details);
-            return Response.json(
-              { error: "A IA recusou processar este documento. Verifique o conteúdo do arquivo." },
-              { status: 422 },
-            );
-          }
-          if (aiMessage.stop_reason === "max_tokens") {
-            return Response.json(
-              { error: "O currículo é longo demais para ser processado de uma vez." },
-              { status: 422 },
-            );
-          }
+                let aiMessage: Anthropic.Message;
+                try {
+                  const ai = anthropic.messages.stream({
+                    model: process.env.ANTHROPIC_MODEL || "claude-opus-5",
+                    max_tokens: 32000,
+                    system: SYSTEM_PROMPT,
+                    messages: [{ role: "user", content: pdfText.slice(0, 60000) }],
+                    output_config: {
+                      format: { type: "json_schema", schema: RESUME_JSON_SCHEMA },
+                      // Extração sob regras fixas de formatação — medium é o
+                      // melhor custo/qualidade. Ajustável por ANTHROPIC_EFFORT.
+                      effort: (process.env.ANTHROPIC_EFFORT || "medium") as
+                        | "low"
+                        | "medium"
+                        | "high"
+                        | "xhigh"
+                        | "max",
+                    },
+                  });
 
-          const raw = aiMessage.content
-            .filter((b): b is Anthropic.TextBlock => b.type === "text")
-            .map((b) => b.text)
-            .join("");
-          let parsed: ResumeData;
-          try {
-            parsed = safeParseResumeJson(raw);
-          } catch (e) {
-            console.error("JSON parse failed:", e, "raw:", raw.slice(0, 500));
-            return Response.json(
-              { error: "A IA retornou um JSON inválido. Tente novamente." },
-              { status: 502 },
-            );
-          }
+                  // O progresso desta etapa acompanha os caracteres que a IA
+                  // realmente emite. O tamanho final é desconhecido, então a
+                  // curva satura: aproxima-se de 88% sem nunca chegar, e só
+                  // fecha a etapa quando o stream termina de verdade. Se a IA
+                  // travar, a barra trava junto — que é o comportamento honesto.
+                  const PISO = 12;
+                  const TETO = 88;
+                  const ESCALA = 2200; // ~tamanho tipico do JSON de um curriculo
+                  let chars = 0;
+                  let ultimoEnvio = 0;
+                  let ultimoPct = PISO;
+                  ai.on("text", (delta) => {
+                    chars += delta.length;
+                    const pct = Math.min(
+                      TETO - 1,
+                      Math.floor(PISO + (TETO - PISO) * (1 - Math.exp(-chars / ESCALA))),
+                    );
+                    const agora = Date.now();
+                    if (pct > ultimoPct && agora - ultimoEnvio > 400) {
+                      ultimoPct = pct;
+                      ultimoEnvio = agora;
+                      send({ stage: "ia", pct, label: "Estruturando no padrão Tailor" });
+                    }
+                  });
 
-          // 3) Build the .docx
-          // Fetch logo bytes (best-effort) for docx header
-          let logoBytes: Uint8Array | null = null;
-          try {
-            const origin = new URL(request.url).origin;
-            const lr = await fetch(new URL(logoUrl, origin).toString());
-            if (lr.ok) logoBytes = new Uint8Array(await lr.arrayBuffer());
-          } catch (e) {
-            console.error("logo fetch failed:", e);
-          }
-          const docx = buildDocx(parsed, logoBytes);
-          const blob = await Packer.toBlob(docx);
-          const arrayBuffer = await blob.arrayBuffer();
+                  aiMessage = await ai.finalMessage();
+                } catch (e) {
+                  console.error("Anthropic error:", e);
+                  if (e instanceof Anthropic.RateLimitError) {
+                    return fail("Limite de uso da IA atingido. Tente novamente em instantes.");
+                  }
+                  if (e instanceof Anthropic.AuthenticationError) {
+                    return fail("Chave da API da Anthropic inválida.");
+                  }
+                  if (
+                    e instanceof Anthropic.APIError &&
+                    (e.status === 529 || /overloaded/i.test(e.message))
+                  ) {
+                    return fail("A IA está temporariamente sobrecarregada. Tente novamente em instantes.");
+                  }
+                  if (e instanceof Anthropic.APIError && /credit|balance/i.test(e.message)) {
+                    return fail("Créditos da Anthropic esgotados. Recarregue o saldo da conta.");
+                  }
+                  return fail("Falha ao processar com IA.");
+                }
 
-          const toTitleCase = (s: string) =>
-            s.toLocaleLowerCase("pt-BR").replace(/(^|\s|-|')(\p{L})/gu, (_, sep, ch) => sep + ch.toLocaleUpperCase("pt-BR"));
-          const nameParts = (parsed.name || "Candidato").trim().split(/\s+/).filter(Boolean).map(toTitleCase);
-          const firstLast =
-            nameParts.length >= 2
-              ? `${nameParts[0]} ${nameParts[nameParts.length - 1]}`
-              : nameParts[0] || "Candidato";
-          const filename = `${firstLast}_CV_Tailor.docx`;
+                if (aiMessage.stop_reason === "refusal") {
+                  console.error("AI refused:", aiMessage.stop_details);
+                  return fail("A IA recusou processar este documento. Verifique o conteúdo do arquivo.");
+                }
+                if (aiMessage.stop_reason === "max_tokens") {
+                  return fail("O currículo é longo demais para ser processado de uma vez.");
+                }
 
-          // Record usage (best-effort)
-          let newUsed = usedToday + 1;
-          try {
-            await fetch(`${supabaseUrl}/rest/v1/generations`, {
-              method: "POST",
-              headers: {
-                apikey: serviceKey,
-                Authorization: `Bearer ${serviceKey}`,
-                "Content-Type": "application/json",
-                Prefer: "return=minimal",
-              },
-              body: JSON.stringify({ user_id: userId }),
-            });
-          } catch (e) {
-            console.error("Failed to record generation:", e);
-            newUsed = usedToday;
-          }
+                const raw = aiMessage.content
+                  .filter((b): b is Anthropic.TextBlock => b.type === "text")
+                  .map((b) => b.text)
+                  .join("");
+                let parsed: ResumeData;
+                try {
+                  parsed = safeParseResumeJson(raw);
+                } catch (e) {
+                  console.error("JSON parse failed:", e, "raw:", raw.slice(0, 500));
+                  return fail("A IA retornou um JSON inválido. Tente novamente.");
+                }
 
-          return new Response(arrayBuffer, {
+                // 3) Montagem do .docx
+                send({ stage: "montando", pct: 92, label: "Montando o documento" });
+                let logoBytes: Uint8Array | null = null;
+                try {
+                  const origin = new URL(request.url).origin;
+                  const lr = await fetch(new URL(logoUrl, origin).toString());
+                  if (lr.ok) logoBytes = new Uint8Array(await lr.arrayBuffer());
+                } catch (e) {
+                  console.error("logo fetch failed:", e);
+                }
+                const blob = await Packer.toBlob(buildDocx(parsed, logoBytes));
+                const bytes = new Uint8Array(await blob.arrayBuffer());
+
+                const toTitleCase = (s: string) =>
+                  s
+                    .toLocaleLowerCase("pt-BR")
+                    .replace(/(^|\s|-|')(\p{L})/gu, (_, sep, ch) => sep + ch.toLocaleUpperCase("pt-BR"));
+                const nameParts = (parsed.name || "Candidato")
+                  .trim()
+                  .split(/\s+/)
+                  .filter(Boolean)
+                  .map(toTitleCase);
+                const firstLast =
+                  nameParts.length >= 2
+                    ? `${nameParts[0]} ${nameParts[nameParts.length - 1]}`
+                    : nameParts[0] || "Candidato";
+                const filename = `${firstLast}_CV_Tailor.docx`;
+
+                // Contabiliza a geração (best-effort)
+                let newUsed = usedToday + 1;
+                try {
+                  await fetch(`${supabaseUrl}/rest/v1/generations`, {
+                    method: "POST",
+                    headers: {
+                      apikey: serviceKey,
+                      Authorization: `Bearer ${serviceKey}`,
+                      "Content-Type": "application/json",
+                      Prefer: "return=minimal",
+                    },
+                    body: JSON.stringify({ user_id: userId }),
+                  });
+                } catch (e) {
+                  console.error("Failed to record generation:", e);
+                  newUsed = usedToday;
+                }
+
+                let base64 = "";
+                for (let i = 0; i < bytes.length; i += 0x8000) {
+                  base64 += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+                }
+                send({
+                  stage: "pronto",
+                  pct: 100,
+                  label: "Currículo pronto",
+                  filename,
+                  used: newUsed,
+                  limit: DAILY_LIMIT,
+                  docx: btoa(base64),
+                });
+                fechado = true;
+                controller.close();
+              } catch (e) {
+                console.error("generate-resume stream error:", e);
+                fail(e instanceof Error ? e.message : "Erro interno");
+              }
+            },
+          });
+
+          return new Response(stream, {
             status: 200,
             headers: {
-              "Content-Type":
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-              "Content-Disposition": `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
-              "X-Resume-Filename": filename,
-              "X-Usage-Used": String(newUsed),
-              "X-Usage-Limit": String(DAILY_LIMIT),
+              "Content-Type": "text/event-stream; charset=utf-8",
+              "Cache-Control": "no-cache, no-transform",
+              Connection: "keep-alive",
+              // Impede buffering em proxies, que engoliria o progresso
+              "X-Accel-Buffering": "no",
             },
           });
         } catch (e) {

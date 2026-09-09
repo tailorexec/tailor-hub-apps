@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "check:docx": "node --experimental-strip-types scripts/check-resume-docx.mjs",
-    "check:extract": "node --experimental-strip-types scripts/check-extract.mjs"
+    "check:extract": "node --experimental-strip-types scripts/check-extract.mjs",
+    "check:progress": "node scripts/check-progress-stream.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
