@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "check:docx": "node --experimental-strip-types scripts/check-resume-docx.mjs"
+    "check:docx": "node --experimental-strip-types scripts/check-resume-docx.mjs",
+    "check:extract": "node --experimental-strip-types scripts/check-extract.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
@@ -71,6 +72,7 @@
     "unpdf": "^1.6.2",
     "vaul": "^1.1.2",
     "vite-tsconfig-paths": "^6.0.2",
+    "word-extractor": "^1.0.4",
     "zod": "^3.24.2"
   },
   "devDependencies": {

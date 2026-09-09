@@ -1,8 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createFileRoute } from "@tanstack/react-router";
-import { extractText, getDocumentProxy } from "unpdf";
 import { Packer } from "docx";
 import logoUrl from "@/assets/tailor-logo.png";
+import { extractResumeText } from "@/lib/extract-resume-text";
 import { buildDocx, type ResumeData } from "@/lib/resume-docx";
 
 
@@ -170,46 +170,14 @@ export const Route = createFileRoute("/api/generate-resume")({
 
           if (!(pdf instanceof File)) {
             return Response.json(
-              { error: "Envie um arquivo PDF, DOCX ou TXT no campo 'pdf'." },
+              { error: "Envie um arquivo PDF, DOC, DOCX ou TXT no campo 'pdf'." },
               { status: 400 },
             );
           }
 
-          // 1) Extract text (PDF, DOCX or TXT)
+          // 1) Extrai o texto bruto (PDF, DOC, DOCX ou TXT)
           const buf = new Uint8Array(await pdf.arrayBuffer());
-          const lowerName = pdf.name.toLowerCase();
-          let pdfText = "";
-
-          if (lowerName.endsWith(".txt") || pdf.type === "text/plain") {
-            pdfText = new TextDecoder().decode(buf).trim();
-          } else if (
-            lowerName.endsWith(".docx") ||
-            pdf.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-          ) {
-            const { unzipSync, strFromU8 } = await import("fflate");
-            const files = unzipSync(buf);
-            const parts = Object.keys(files).filter(
-              (n) => n === "word/document.xml" || /^word\/(header|footer)\d*\.xml$/.test(n),
-            );
-            const xml = parts.map((n) => strFromU8(files[n])).join("\n");
-            pdfText = xml
-              .replace(/<w:p[ >]/g, "\n<w:p ")
-              .replace(/<w:tab\b[^>]*\/?>/g, "\t")
-              .replace(/<w:br\b[^>]*\/?>/g, "\n")
-              .replace(/<[^>]+>/g, "")
-              .replace(/&lt;/g, "<")
-              .replace(/&gt;/g, ">")
-              .replace(/&amp;/g, "&")
-              .replace(/&quot;/g, '"')
-              .replace(/&apos;/g, "'")
-              .replace(/[ \t]+\n/g, "\n")
-              .replace(/\n{3,}/g, "\n\n")
-              .trim();
-          } else {
-            const doc = await getDocumentProxy(buf);
-            const { text } = await extractText(doc, { mergePages: true });
-            pdfText = (Array.isArray(text) ? text.join("\n") : text).trim();
-          }
+          const { text: pdfText } = await extractResumeText(buf, pdf.name, pdf.type);
 
           if (!pdfText) {
             return Response.json(
