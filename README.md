@@ -112,6 +112,18 @@ Dois pontos que moldaram a migration:
    igualmente. É intencional — a falha passa a negar acesso em vez de conceder.
    As linhas já existentes não são tocadas.
 
+### Troca de senha pelo painel
+
+Em `/admin`, cada usuário tem o botão **Senha**, que define uma senha nova na
+hora. A rota `/api/admin-set-password` é quem faz a troca, e ela **não confia no
+cliente**: revalida o token do requisitante e confere `user_roles.role = 'admin'`
+com a service key antes de chamar a Admin API do GoTrue. Sem isso, um `curl` com
+um token de usuário comum trocaria a senha de qualquer um.
+
+A senha não é gravada em lugar nenhum além do `auth.users` do Supabase — só o
+diálogo, logo depois de salvar, a mostra para o admin repassar. Quem trocou a
+senha de quem fica nos logs da Vercel (`[admin-set-password]`), sem a senha.
+
 ### Verificação pós-deploy
 
 Cadastre um usuário de teste em `/signup` e confirme que o default pegou:
@@ -138,6 +150,7 @@ src/
 │   ├── _authenticated.*.tsx       área logada (generator, nps, admin)
 │   ├── nps.form.tsx               formulário público de NPS
 │   └── api/
+│       ├── admin-set-password.ts  admin redefine a senha de um usuário
 │       ├── generate-resume.ts     PDF/DOCX/TXT → Claude → .docx padrão Tailor
 │       └── usage.ts               consulta da quota diária
 ├── integrations/supabase/         clients, middleware de auth, tipos

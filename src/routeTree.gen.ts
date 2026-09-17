@@ -16,6 +16,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 import { Route as AuthenticatedGeneratorRouteImport } from './routes/_authenticated.generator'
 import { Route as AuthenticatedNpsRouteImport } from './routes/_authenticated.nps'
+import { Route as ApiAdminSetPasswordRouteImport } from './routes/api/admin-set-password'
 import { Route as ApiGenerateResumeRouteImport } from './routes/api/generate-resume'
 import { Route as ApiUsageRouteImport } from './routes/api/usage'
 import { Route as NpsFormRouteImport } from './routes/nps.form'
@@ -54,6 +55,11 @@ const AuthenticatedNpsRoute = AuthenticatedNpsRouteImport.update({
   path: '/nps',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const ApiAdminSetPasswordRoute = ApiAdminSetPasswordRouteImport.update({
+  id: '/api/admin-set-password',
+  path: '/api/admin-set-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGenerateResumeRoute = ApiGenerateResumeRouteImport.update({
   id: '/api/generate-resume',
   path: '/api/generate-resume',
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/generator': typeof AuthenticatedGeneratorRoute
   '/nps': typeof AuthenticatedNpsRoute
+  '/api/admin-set-password': typeof ApiAdminSetPasswordRoute
   '/api/generate-resume': typeof ApiGenerateResumeRoute
   '/api/usage': typeof ApiUsageRoute
   '/nps/form': typeof NpsFormRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/generator': typeof AuthenticatedGeneratorRoute
   '/nps': typeof AuthenticatedNpsRoute
+  '/api/admin-set-password': typeof ApiAdminSetPasswordRoute
   '/api/generate-resume': typeof ApiGenerateResumeRoute
   '/api/usage': typeof ApiUsageRoute
   '/nps/form': typeof NpsFormRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/generator': typeof AuthenticatedGeneratorRoute
   '/_authenticated/nps': typeof AuthenticatedNpsRoute
+  '/api/admin-set-password': typeof ApiAdminSetPasswordRoute
   '/api/generate-resume': typeof ApiGenerateResumeRoute
   '/api/usage': typeof ApiUsageRoute
   '/nps/form': typeof NpsFormRoute
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/generator'
     | '/nps'
+    | '/api/admin-set-password'
     | '/api/generate-resume'
     | '/api/usage'
     | '/nps/form'
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/generator'
     | '/nps'
+    | '/api/admin-set-password'
     | '/api/generate-resume'
     | '/api/usage'
     | '/nps/form'
@@ -137,6 +148,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/generator'
     | '/_authenticated/nps'
+    | '/api/admin-set-password'
     | '/api/generate-resume'
     | '/api/usage'
     | '/nps/form'
@@ -147,6 +159,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  ApiAdminSetPasswordRoute: typeof ApiAdminSetPasswordRoute
   ApiGenerateResumeRoute: typeof ApiGenerateResumeRoute
   ApiUsageRoute: typeof ApiUsageRoute
   NpsFormRoute: typeof NpsFormRoute
@@ -203,6 +216,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNpsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/admin-set-password': {
+      id: '/api/admin-set-password'
+      path: '/api/admin-set-password'
+      fullPath: '/api/admin-set-password'
+      preLoaderRoute: typeof ApiAdminSetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/generate-resume': {
       id: '/api/generate-resume'
       path: '/api/generate-resume'
@@ -248,6 +268,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  ApiAdminSetPasswordRoute: ApiAdminSetPasswordRoute,
   ApiGenerateResumeRoute: ApiGenerateResumeRoute,
   ApiUsageRoute: ApiUsageRoute,
   NpsFormRoute: NpsFormRoute,
