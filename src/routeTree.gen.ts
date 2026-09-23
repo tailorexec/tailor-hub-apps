@@ -19,7 +19,19 @@ import { Route as AuthenticatedNpsRouteImport } from './routes/_authenticated.np
 import { Route as ApiAdminSetPasswordRouteImport } from './routes/api/admin-set-password'
 import { Route as ApiGenerateResumeRouteImport } from './routes/api/generate-resume'
 import { Route as ApiUsageRouteImport } from './routes/api/usage'
+import { Route as BriefingTokenRouteImport } from './routes/briefing.$token'
 import { Route as NpsFormRouteImport } from './routes/nps.form'
+import { Route as AuthenticatedTpmIndexRouteImport } from './routes/_authenticated.tpm.index'
+import { Route as AuthenticatedTpmCasesRouteImport } from './routes/_authenticated.tpm.cases'
+import { Route as AuthenticatedTpmNovoRouteImport } from './routes/_authenticated.tpm.novo'
+import { Route as ApiTpmCasesRouteImport } from './routes/api/tpm.cases'
+import { Route as ApiTpmFeedbackRouteImport } from './routes/api/tpm.feedback'
+import { Route as ApiTpmGenerateRouteImport } from './routes/api/tpm.generate'
+import { Route as ApiTpmMatchSectorRouteImport } from './routes/api/tpm.match-sector'
+import { Route as ApiTpmParseAgendaRouteImport } from './routes/api/tpm.parse-agenda'
+import { Route as ApiTpmReportsRouteImport } from './routes/api/tpm.reports'
+import { Route as ApiTpmSharedRouteImport } from './routes/api/tpm.shared'
+import { Route as ApiTpmSimulateRouteImport } from './routes/api/tpm.simulate'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,9 +82,69 @@ const ApiUsageRoute = ApiUsageRouteImport.update({
   path: '/api/usage',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BriefingTokenRoute = BriefingTokenRouteImport.update({
+  id: '/briefing/$token',
+  path: '/briefing/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NpsFormRoute = NpsFormRouteImport.update({
   id: '/nps/form',
   path: '/nps/form',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedTpmIndexRoute = AuthenticatedTpmIndexRouteImport.update({
+  id: '/tpm/',
+  path: '/tpm/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTpmCasesRoute = AuthenticatedTpmCasesRouteImport.update({
+  id: '/tpm/cases',
+  path: '/tpm/cases',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTpmNovoRoute = AuthenticatedTpmNovoRouteImport.update({
+  id: '/tpm/novo',
+  path: '/tpm/novo',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const ApiTpmCasesRoute = ApiTpmCasesRouteImport.update({
+  id: '/api/tpm/cases',
+  path: '/api/tpm/cases',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTpmFeedbackRoute = ApiTpmFeedbackRouteImport.update({
+  id: '/api/tpm/feedback',
+  path: '/api/tpm/feedback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTpmGenerateRoute = ApiTpmGenerateRouteImport.update({
+  id: '/api/tpm/generate',
+  path: '/api/tpm/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTpmMatchSectorRoute = ApiTpmMatchSectorRouteImport.update({
+  id: '/api/tpm/match-sector',
+  path: '/api/tpm/match-sector',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTpmParseAgendaRoute = ApiTpmParseAgendaRouteImport.update({
+  id: '/api/tpm/parse-agenda',
+  path: '/api/tpm/parse-agenda',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTpmReportsRoute = ApiTpmReportsRouteImport.update({
+  id: '/api/tpm/reports',
+  path: '/api/tpm/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTpmSharedRoute = ApiTpmSharedRouteImport.update({
+  id: '/api/tpm/shared',
+  path: '/api/tpm/shared',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTpmSimulateRoute = ApiTpmSimulateRouteImport.update({
+  id: '/api/tpm/simulate',
+  path: '/api/tpm/simulate',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -86,7 +158,19 @@ export interface FileRoutesByFullPath {
   '/api/admin-set-password': typeof ApiAdminSetPasswordRoute
   '/api/generate-resume': typeof ApiGenerateResumeRoute
   '/api/usage': typeof ApiUsageRoute
+  '/briefing/$token': typeof BriefingTokenRoute
   '/nps/form': typeof NpsFormRoute
+  '/tpm/cases': typeof AuthenticatedTpmCasesRoute
+  '/tpm/novo': typeof AuthenticatedTpmNovoRoute
+  '/api/tpm/cases': typeof ApiTpmCasesRoute
+  '/api/tpm/feedback': typeof ApiTpmFeedbackRoute
+  '/api/tpm/generate': typeof ApiTpmGenerateRoute
+  '/api/tpm/match-sector': typeof ApiTpmMatchSectorRoute
+  '/api/tpm/parse-agenda': typeof ApiTpmParseAgendaRoute
+  '/api/tpm/reports': typeof ApiTpmReportsRoute
+  '/api/tpm/shared': typeof ApiTpmSharedRoute
+  '/api/tpm/simulate': typeof ApiTpmSimulateRoute
+  '/tpm/': typeof AuthenticatedTpmIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -98,7 +182,19 @@ export interface FileRoutesByTo {
   '/api/admin-set-password': typeof ApiAdminSetPasswordRoute
   '/api/generate-resume': typeof ApiGenerateResumeRoute
   '/api/usage': typeof ApiUsageRoute
+  '/briefing/$token': typeof BriefingTokenRoute
   '/nps/form': typeof NpsFormRoute
+  '/tpm/cases': typeof AuthenticatedTpmCasesRoute
+  '/tpm/novo': typeof AuthenticatedTpmNovoRoute
+  '/api/tpm/cases': typeof ApiTpmCasesRoute
+  '/api/tpm/feedback': typeof ApiTpmFeedbackRoute
+  '/api/tpm/generate': typeof ApiTpmGenerateRoute
+  '/api/tpm/match-sector': typeof ApiTpmMatchSectorRoute
+  '/api/tpm/parse-agenda': typeof ApiTpmParseAgendaRoute
+  '/api/tpm/reports': typeof ApiTpmReportsRoute
+  '/api/tpm/shared': typeof ApiTpmSharedRoute
+  '/api/tpm/simulate': typeof ApiTpmSimulateRoute
+  '/tpm': typeof AuthenticatedTpmIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -112,7 +208,19 @@ export interface FileRoutesById {
   '/api/admin-set-password': typeof ApiAdminSetPasswordRoute
   '/api/generate-resume': typeof ApiGenerateResumeRoute
   '/api/usage': typeof ApiUsageRoute
+  '/briefing/$token': typeof BriefingTokenRoute
   '/nps/form': typeof NpsFormRoute
+  '/_authenticated/tpm/cases': typeof AuthenticatedTpmCasesRoute
+  '/_authenticated/tpm/novo': typeof AuthenticatedTpmNovoRoute
+  '/api/tpm/cases': typeof ApiTpmCasesRoute
+  '/api/tpm/feedback': typeof ApiTpmFeedbackRoute
+  '/api/tpm/generate': typeof ApiTpmGenerateRoute
+  '/api/tpm/match-sector': typeof ApiTpmMatchSectorRoute
+  '/api/tpm/parse-agenda': typeof ApiTpmParseAgendaRoute
+  '/api/tpm/reports': typeof ApiTpmReportsRoute
+  '/api/tpm/shared': typeof ApiTpmSharedRoute
+  '/api/tpm/simulate': typeof ApiTpmSimulateRoute
+  '/_authenticated/tpm/': typeof AuthenticatedTpmIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -126,7 +234,19 @@ export interface FileRouteTypes {
     | '/api/admin-set-password'
     | '/api/generate-resume'
     | '/api/usage'
+    | '/briefing/$token'
     | '/nps/form'
+    | '/tpm/cases'
+    | '/tpm/novo'
+    | '/api/tpm/cases'
+    | '/api/tpm/feedback'
+    | '/api/tpm/generate'
+    | '/api/tpm/match-sector'
+    | '/api/tpm/parse-agenda'
+    | '/api/tpm/reports'
+    | '/api/tpm/shared'
+    | '/api/tpm/simulate'
+    | '/tpm/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -138,7 +258,19 @@ export interface FileRouteTypes {
     | '/api/admin-set-password'
     | '/api/generate-resume'
     | '/api/usage'
+    | '/briefing/$token'
     | '/nps/form'
+    | '/tpm/cases'
+    | '/tpm/novo'
+    | '/api/tpm/cases'
+    | '/api/tpm/feedback'
+    | '/api/tpm/generate'
+    | '/api/tpm/match-sector'
+    | '/api/tpm/parse-agenda'
+    | '/api/tpm/reports'
+    | '/api/tpm/shared'
+    | '/api/tpm/simulate'
+    | '/tpm'
   id:
     | '__root__'
     | '/'
@@ -151,7 +283,19 @@ export interface FileRouteTypes {
     | '/api/admin-set-password'
     | '/api/generate-resume'
     | '/api/usage'
+    | '/briefing/$token'
     | '/nps/form'
+    | '/_authenticated/tpm/cases'
+    | '/_authenticated/tpm/novo'
+    | '/api/tpm/cases'
+    | '/api/tpm/feedback'
+    | '/api/tpm/generate'
+    | '/api/tpm/match-sector'
+    | '/api/tpm/parse-agenda'
+    | '/api/tpm/reports'
+    | '/api/tpm/shared'
+    | '/api/tpm/simulate'
+    | '/_authenticated/tpm/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -162,7 +306,16 @@ export interface RootRouteChildren {
   ApiAdminSetPasswordRoute: typeof ApiAdminSetPasswordRoute
   ApiGenerateResumeRoute: typeof ApiGenerateResumeRoute
   ApiUsageRoute: typeof ApiUsageRoute
+  BriefingTokenRoute: typeof BriefingTokenRoute
   NpsFormRoute: typeof NpsFormRoute
+  ApiTpmCasesRoute: typeof ApiTpmCasesRoute
+  ApiTpmFeedbackRoute: typeof ApiTpmFeedbackRoute
+  ApiTpmGenerateRoute: typeof ApiTpmGenerateRoute
+  ApiTpmMatchSectorRoute: typeof ApiTpmMatchSectorRoute
+  ApiTpmParseAgendaRoute: typeof ApiTpmParseAgendaRoute
+  ApiTpmReportsRoute: typeof ApiTpmReportsRoute
+  ApiTpmSharedRoute: typeof ApiTpmSharedRoute
+  ApiTpmSimulateRoute: typeof ApiTpmSimulateRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -237,11 +390,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUsageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/briefing/$token': {
+      id: '/briefing/$token'
+      path: '/briefing/$token'
+      fullPath: '/briefing/$token'
+      preLoaderRoute: typeof BriefingTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/nps/form': {
       id: '/nps/form'
       path: '/nps/form'
       fullPath: '/nps/form'
       preLoaderRoute: typeof NpsFormRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/tpm/': {
+      id: '/_authenticated/tpm/'
+      path: '/tpm'
+      fullPath: '/tpm/'
+      preLoaderRoute: typeof AuthenticatedTpmIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tpm/cases': {
+      id: '/_authenticated/tpm/cases'
+      path: '/tpm/cases'
+      fullPath: '/tpm/cases'
+      preLoaderRoute: typeof AuthenticatedTpmCasesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tpm/novo': {
+      id: '/_authenticated/tpm/novo'
+      path: '/tpm/novo'
+      fullPath: '/tpm/novo'
+      preLoaderRoute: typeof AuthenticatedTpmNovoRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/api/tpm/cases': {
+      id: '/api/tpm/cases'
+      path: '/api/tpm/cases'
+      fullPath: '/api/tpm/cases'
+      preLoaderRoute: typeof ApiTpmCasesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tpm/feedback': {
+      id: '/api/tpm/feedback'
+      path: '/api/tpm/feedback'
+      fullPath: '/api/tpm/feedback'
+      preLoaderRoute: typeof ApiTpmFeedbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tpm/generate': {
+      id: '/api/tpm/generate'
+      path: '/api/tpm/generate'
+      fullPath: '/api/tpm/generate'
+      preLoaderRoute: typeof ApiTpmGenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tpm/match-sector': {
+      id: '/api/tpm/match-sector'
+      path: '/api/tpm/match-sector'
+      fullPath: '/api/tpm/match-sector'
+      preLoaderRoute: typeof ApiTpmMatchSectorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tpm/parse-agenda': {
+      id: '/api/tpm/parse-agenda'
+      path: '/api/tpm/parse-agenda'
+      fullPath: '/api/tpm/parse-agenda'
+      preLoaderRoute: typeof ApiTpmParseAgendaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tpm/reports': {
+      id: '/api/tpm/reports'
+      path: '/api/tpm/reports'
+      fullPath: '/api/tpm/reports'
+      preLoaderRoute: typeof ApiTpmReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tpm/shared': {
+      id: '/api/tpm/shared'
+      path: '/api/tpm/shared'
+      fullPath: '/api/tpm/shared'
+      preLoaderRoute: typeof ApiTpmSharedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tpm/simulate': {
+      id: '/api/tpm/simulate'
+      path: '/api/tpm/simulate'
+      fullPath: '/api/tpm/simulate'
+      preLoaderRoute: typeof ApiTpmSimulateRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -251,12 +488,18 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedGeneratorRoute: typeof AuthenticatedGeneratorRoute
   AuthenticatedNpsRoute: typeof AuthenticatedNpsRoute
+  AuthenticatedTpmCasesRoute: typeof AuthenticatedTpmCasesRoute
+  AuthenticatedTpmNovoRoute: typeof AuthenticatedTpmNovoRoute
+  AuthenticatedTpmIndexRoute: typeof AuthenticatedTpmIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedGeneratorRoute: AuthenticatedGeneratorRoute,
   AuthenticatedNpsRoute: AuthenticatedNpsRoute,
+  AuthenticatedTpmCasesRoute: AuthenticatedTpmCasesRoute,
+  AuthenticatedTpmNovoRoute: AuthenticatedTpmNovoRoute,
+  AuthenticatedTpmIndexRoute: AuthenticatedTpmIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -271,7 +514,16 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminSetPasswordRoute: ApiAdminSetPasswordRoute,
   ApiGenerateResumeRoute: ApiGenerateResumeRoute,
   ApiUsageRoute: ApiUsageRoute,
+  BriefingTokenRoute: BriefingTokenRoute,
   NpsFormRoute: NpsFormRoute,
+  ApiTpmCasesRoute: ApiTpmCasesRoute,
+  ApiTpmFeedbackRoute: ApiTpmFeedbackRoute,
+  ApiTpmGenerateRoute: ApiTpmGenerateRoute,
+  ApiTpmMatchSectorRoute: ApiTpmMatchSectorRoute,
+  ApiTpmParseAgendaRoute: ApiTpmParseAgendaRoute,
+  ApiTpmReportsRoute: ApiTpmReportsRoute,
+  ApiTpmSharedRoute: ApiTpmSharedRoute,
+  ApiTpmSimulateRoute: ApiTpmSimulateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

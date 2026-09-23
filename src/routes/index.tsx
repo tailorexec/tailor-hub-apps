@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { FileText, Lock, BarChart3 } from "lucide-react";
+import { BarChart3, FileText, Lock, Target } from "lucide-react";
 import logo from "@/assets/tailor-logo.png";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -41,6 +41,14 @@ function HubPage() {
       description: "Dashboard e formulário de pesquisa de experiência (NPS).",
       icon: <BarChart3 className="w-8 h-8" />,
       target: "/nps",
+      available: true,
+    },
+    {
+      id: "tpm",
+      name: "TPM — Pré-Reunião",
+      description: "Briefing estratégico antes da reunião, com pesquisa e cases Tailor.",
+      icon: <Target className="w-8 h-8" />,
+      target: "/tpm",
       available: true,
     },
   ];
@@ -88,9 +96,7 @@ function HubPage() {
               </div>
               <div>
                 <div className="text-lg font-bold text-foreground">{app.name}</div>
-                <p className="mt-1 text-sm text-muted-foreground line-clamp-3">
-                  {app.description}
-                </p>
+                <p className="mt-1 text-sm text-muted-foreground line-clamp-3">{app.description}</p>
               </div>
               {!app.available && (
                 <span className="absolute top-4 right-4 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">

@@ -59,10 +59,19 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  /* Usados pelo TPM para sinalizar confiabilidade (alta/média/baixa). */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
 }
 
 :root {
   --radius: 0.625rem;
+  --success: oklch(0.55 0.14 150);
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.72 0.16 75);
+  --warning-foreground: oklch(0.21 0.04 265);
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
@@ -151,6 +160,30 @@
     padding: 2rem;
     margin-bottom: 1.25rem;
     box-shadow: 0 4px 20px -8px oklch(0 0 0 / 8%);
+  }
+
+  /* ── Utilitários do TPM ───────────────────────────────────────────────
+   * A marcação veio do app tailor-pre-meeting, que era dark e usava Playfair
+   * nos títulos. Dentro do hub ela adota a tipografia daqui: `font-heading`
+   * vira o mesmo tratamento de título do resto (peso forte, tracking apertado)
+   * em vez de importar um serif que o hub não usa.
+   */
+  .font-heading {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .surface-elevated {
+    background-color: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+  }
+
+  .glass-card {
+    background-color: color-mix(in oklch, var(--color-card) 80%, transparent);
+    backdrop-filter: blur(4px);
+    border: 1px solid color-mix(in oklch, var(--color-border) 50%, transparent);
+    border-radius: 12px;
   }
 
   .tailor-card-title {
