@@ -33,9 +33,7 @@ const TailorUploadZone = ({ file, onFileChange }: Props) => {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground truncate">{file.name}</p>
-          <p className="text-xs text-muted-foreground">
-            {(file.size / 1024).toFixed(0)} KB
-          </p>
+          <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(0)} KB</p>
         </div>
         <button
           onClick={() => onFileChange(null)}
@@ -58,18 +56,14 @@ const TailorUploadZone = ({ file, onFileChange }: Props) => {
       onDragLeave={() => setDragOver(false)}
       onDrop={onDrop}
       className={`mt-2 cursor-pointer rounded-[10px] border-2 border-dashed p-8 text-center transition-colors ${
-        dragOver
-          ? "border-primary bg-secondary"
-          : "border-border bg-background hover:bg-secondary"
+        dragOver ? "border-primary bg-secondary" : "border-border bg-background hover:bg-secondary"
       }`}
     >
       <div className="flex flex-col items-center gap-2">
         <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
           <UploadCloud className="w-6 h-6 text-muted-foreground" />
         </div>
-        <p className="text-sm font-semibold text-foreground">
-          Clique ou arraste o arquivo aqui
-        </p>
+        <p className="text-sm font-semibold text-foreground">Clique ou arraste o arquivo aqui</p>
         <p className="text-xs text-muted-foreground">Arquivos .pdf, .doc, .docx ou .txt</p>
       </div>
       <input

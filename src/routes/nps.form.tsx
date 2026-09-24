@@ -122,7 +122,12 @@ function NpsFormPage() {
     <div className="min-h-screen bg-background">
       <header className="w-full border-b border-border bg-card">
         <div className="max-w-[820px] mx-auto px-6 h-20 flex items-center">
-          <Link to="/" title="Ir para o início" aria-label="Ir para o início" className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+          <Link
+            to="/"
+            title="Ir para o início"
+            aria-label="Ir para o início"
+            className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
             <img src={logo} alt="Tailor" className="h-8 w-auto" />
           </Link>
         </div>
@@ -196,7 +201,8 @@ function NpsFormPage() {
 
           <div className="tailor-card space-y-3">
             <label className="block text-sm font-semibold text-foreground">
-              1 — Em uma escala de 0 a 10, o quanto você indicaria a Tailor a um amigo ou familiar? *
+              1 — Em uma escala de 0 a 10, o quanto você indicaria a Tailor a um amigo ou familiar?
+              *
             </label>
             <ScaleRow
               value={npsScore}

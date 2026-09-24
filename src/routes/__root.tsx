@@ -75,15 +75,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Tailor Hub" },
-      { name: "description", content: "Resume Replication generates resumes from provided data, allowing for custom branding and internal use notes." },
+      {
+        name: "description",
+        content:
+          "Resume Replication generates resumes from provided data, allowing for custom branding and internal use notes.",
+      },
       { name: "author", content: "Tailor Executive Search" },
       { property: "og:title", content: "Gerador de Currículo" },
-      { property: "og:description", content: "Resume Replication generates resumes from provided data, allowing for custom branding and internal use notes." },
+      {
+        property: "og:description",
+        content:
+          "Resume Replication generates resumes from provided data, allowing for custom branding and internal use notes.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@tailorexec" },
       { name: "twitter:title", content: "Gerador de Currículo" },
-      { name: "twitter:description", content: "Resume Replication generates resumes from provided data, allowing for custom branding and internal use notes." },
+      {
+        name: "twitter:description",
+        content:
+          "Resume Replication generates resumes from provided data, allowing for custom branding and internal use notes.",
+      },
       { property: "og:image", content: "https://hub.tailorexec.com.br/og-image.png" },
       { name: "twitter:image", content: "https://hub.tailorexec.com.br/og-image.png" },
     ],

@@ -1,6 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Sparkles, Download, Loader2, CheckCircle, AlertCircle, Clock, ShieldX } from "lucide-react";
+import {
+  Sparkles,
+  Download,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  ShieldX,
+} from "lucide-react";
 import TailorHeader from "@/components/TailorHeader";
 import TailorHero from "@/components/TailorHero";
 import TailorUploadZone from "@/components/TailorUploadZone";
@@ -45,7 +53,6 @@ function Index() {
 
   useEffect(() => {
     if (profile?.hub_status === "approved") fetchUsage();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.hub_status]);
 
   const toTailorFilename = (rawName?: string | null) => {
@@ -169,7 +176,8 @@ function Index() {
                 </div>
                 <h2 className="text-xl font-bold text-foreground mb-2">Aguardando aprovação</h2>
                 <p className="text-sm text-muted-foreground">
-                  Seu cadastro foi recebido. Um administrador da Tailor precisa aprovar seu acesso antes de você poder usar o gerador.
+                  Seu cadastro foi recebido. Um administrador da Tailor precisa aprovar seu acesso
+                  antes de você poder usar o gerador.
                 </p>
               </>
             ) : (
@@ -179,7 +187,8 @@ function Index() {
                 </div>
                 <h2 className="text-xl font-bold text-foreground mb-2">Acesso recusado</h2>
                 <p className="text-sm text-muted-foreground">
-                  Seu cadastro foi recusado. Entre em contato com a Tailor se acredita que isso foi um engano.
+                  Seu cadastro foi recusado. Entre em contato com a Tailor se acredita que isso foi
+                  um engano.
                 </p>
               </>
             )}
@@ -226,11 +235,7 @@ function Index() {
           )}
 
           <button
-            disabled={
-              !file ||
-              status === "loading" ||
-              (usage ? usage.used >= usage.limit : false)
-            }
+            disabled={!file || status === "loading" || (usage ? usage.used >= usage.limit : false)}
             onClick={handleGenerate}
             className="flex items-center justify-center gap-2.5 w-full py-4 px-8 bg-primary text-primary-foreground font-bold text-sm tracking-wider uppercase rounded-[10px] border-none cursor-pointer transition-all hover:brightness-90 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed mt-2"
           >
@@ -248,7 +253,8 @@ function Index() {
                   Limite diário atingido
                 </p>
                 <p className="text-xs text-gray-700 leading-relaxed">
-                  Você atingiu o limite de {usage.limit} gerações nas últimas 24h. Contate o administrador.
+                  Você atingiu o limite de {usage.limit} gerações nas últimas 24h. Contate o
+                  administrador.
                 </p>
               </div>
             </div>

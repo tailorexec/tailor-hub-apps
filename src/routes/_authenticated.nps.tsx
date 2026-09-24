@@ -1,6 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Check, X, Copy, ArrowLeft, ShieldX, Trash2, MessageSquareText } from "lucide-react";
+import {
+  Loader2,
+  Check,
+  X,
+  Copy,
+  ArrowLeft,
+  ShieldX,
+  Trash2,
+  MessageSquareText,
+} from "lucide-react";
 import TailorHeader from "@/components/TailorHeader";
 import TailorFooter from "@/components/TailorFooter";
 import { useAuth } from "@/hooks/useAuth";
@@ -35,7 +44,10 @@ export const Route = createFileRoute("/_authenticated/nps")({
   head: () => ({
     meta: [
       { title: "NPS Tailor" },
-      { name: "description", content: "Dashboard de métricas e respostas da pesquisa NPS da Tailor." },
+      {
+        name: "description",
+        content: "Dashboard de métricas e respostas da pesquisa NPS da Tailor.",
+      },
     ],
   }),
   component: NpsPage,
@@ -83,10 +95,7 @@ function NpsPage() {
     if (!hasAccess) return;
     setFetching(true);
     (async () => {
-      let q = supabase
-        .from("nps_responses")
-        .select("*")
-        .order("created_at", { ascending: false });
+      let q = supabase.from("nps_responses").select("*").order("created_at", { ascending: false });
       if (period > 0) {
         const since = new Date(Date.now() - period * 86400000).toISOString();
         q = q.gte("created_at", since);
@@ -94,7 +103,11 @@ function NpsPage() {
       const { data, error } = await q.limit(5000);
       setFetching(false);
       if (error) {
-        toast({ title: "Erro ao carregar respostas", description: error.message, variant: "destructive" });
+        toast({
+          title: "Erro ao carregar respostas",
+          description: error.message,
+          variant: "destructive",
+        });
         return;
       }
       setResponses((data ?? []) as NpsResponse[]);
@@ -109,7 +122,11 @@ function NpsPage() {
       .select("id,user_id,status,created_at")
       .order("created_at", { ascending: false });
     if (error) {
-      toast({ title: "Erro ao carregar usuários", description: error.message, variant: "destructive" });
+      toast({
+        title: "Erro ao carregar usuários",
+        description: error.message,
+        variant: "destructive",
+      });
       return;
     }
     const rows = (data ?? []) as AccessRow[];
@@ -225,7 +242,8 @@ function NpsPage() {
               </p>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Você não tem acesso ao dashboard NPS. Entre em contato com o administrador para solicitar acesso.
+                Você não tem acesso ao dashboard NPS. Entre em contato com o administrador para
+                solicitar acesso.
               </p>
             )}
           </div>
@@ -361,10 +379,7 @@ function NpsPage() {
               <MetricCard label="NPS" value={String(metrics.nps)} accent />
               <MetricCard label="Respostas" value={String(metrics.total)} />
               <MetricCard label="Nota média" value={String(metrics.avg)} />
-              <MetricCard
-                label="Contratados"
-                value={`${metrics.hired} (${metrics.hiredPct}%)`}
-              />
+              <MetricCard label="Contratados" value={`${metrics.hired} (${metrics.hiredPct}%)`} />
               <MetricCard label="Promotores" value={String(metrics.promoters)} color="#1a6a35" />
               <MetricCard label="Neutros" value={String(metrics.passives)} color="#b07a00" />
               <MetricCard label="Detratores" value={String(metrics.detractors)} color="#941010" />
@@ -416,7 +431,9 @@ function NpsPage() {
                             </td>
                             <td className="px-4 py-2">{r.nome || "—"}</td>
                             <td className="px-4 py-2">{r.consultor || "—"}</td>
-                            <td className="text-center px-2 py-2">{r.contratado ? "Sim" : "Não"}</td>
+                            <td className="text-center px-2 py-2">
+                              {r.contratado ? "Sim" : "Não"}
+                            </td>
                             <td className="text-center px-2 py-2">
                               <span
                                 className="inline-flex items-center gap-1.5 font-bold"

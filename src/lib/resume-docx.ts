@@ -34,7 +34,6 @@ export interface ResumeData {
   other_activities?: string[];
 }
 
-
 const PRIMARY = "1F2937"; // slate-800
 const MUTED = "6B7280";
 const TAILOR_RED = "C00000"; // Tailor red
@@ -100,10 +99,7 @@ function normalizeBullets(items: string[]): string[] {
   return cleaned.map((b, i) => `${b}${i === cleaned.length - 1 ? "." : ";"}`);
 }
 
-export function buildDocx(
-  data: ResumeData,
-  logoBytes: Uint8Array | null,
-): Document {
+export function buildDocx(data: ResumeData, logoBytes: Uint8Array | null): Document {
   const children: Paragraph[] = [];
 
   // Name (uppercase)
@@ -127,7 +123,9 @@ export function buildDocx(
     children.push(
       new Paragraph({
         spacing: { after: 160 },
-        children: [new TextRun({ text: data.location, size: 22, color: MUTED, font: "Montserrat" })],
+        children: [
+          new TextRun({ text: data.location, size: 22, color: MUTED, font: "Montserrat" }),
+        ],
       }),
     );
   }
@@ -156,7 +154,15 @@ export function buildDocx(
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: [new TextRun({ text: "sem informação", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
+        children: [
+          new TextRun({
+            text: "sem informação",
+            size: 22,
+            italics: true,
+            color: MUTED,
+            font: "Montserrat",
+          }),
+        ],
       }),
     );
   }
@@ -203,7 +209,13 @@ export function buildDocx(
           new Paragraph({
             spacing: { after: 80 },
             children: [
-              new TextRun({ text: exp.location, italics: true, size: 20, color: MUTED, font: "Montserrat" }),
+              new TextRun({
+                text: exp.location,
+                italics: true,
+                size: 20,
+                color: MUTED,
+                font: "Montserrat",
+              }),
             ],
           }),
         );
@@ -216,7 +228,15 @@ export function buildDocx(
     children.push(
       new Paragraph({
         spacing: { after: 80 },
-        children: [new TextRun({ text: "sem informação", size: 22, italics: true, color: MUTED, font: "Montserrat" })],
+        children: [
+          new TextRun({
+            text: "sem informação",
+            size: 22,
+            italics: true,
+            color: MUTED,
+            font: "Montserrat",
+          }),
+        ],
       }),
     );
   }
@@ -242,8 +262,6 @@ export function buildDocx(
     const items = normalizeBullets(data.other_activities);
     for (const a of items) children.push(bullet(a));
   }
-
-
 
   return new Document({
     creator: "Tailor CV Generator",

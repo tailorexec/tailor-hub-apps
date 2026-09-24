@@ -5,7 +5,9 @@ const TailorHero = () => {
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 -bottom-32 h-64 mx-auto max-w-[900px] rounded-[100%] blur-3xl opacity-40"
-        style={{ background: "radial-gradient(closest-side, oklch(0.58 0.22 25 / 0.6), transparent)" }}
+        style={{
+          background: "radial-gradient(closest-side, oklch(0.58 0.22 25 / 0.6), transparent)",
+        }}
       />
 
       <div className="relative max-w-[1200px] mx-auto px-6 md:px-10 py-20 md:py-28 text-center">
@@ -20,7 +22,8 @@ const TailorHero = () => {
         </h1>
 
         <p className="mt-6 text-base md:text-lg text-white/60 max-w-[620px] mx-auto leading-relaxed">
-          Envie o PDF do candidato e receba instantaneamente o Word formatado no padrão oficial Tailor.
+          Envie o PDF do candidato e receba instantaneamente o Word formatado no padrão oficial
+          Tailor.
         </p>
       </div>
     </section>
