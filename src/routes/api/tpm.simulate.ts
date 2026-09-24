@@ -4,6 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { tpmAdmin } from "@/integrations/tpm/client.server";
 import { requireApprovedUser } from "@/lib/tpm/auth.server";
 import { buildSimulateSystemPrompt } from "@/lib/tpm/prompts";
+import { registraUso } from "@/lib/ai-usage.server";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -105,7 +106,7 @@ export const Route = createFileRoute("/api/tpm/simulate")({
         try {
           const anthropic = new Anthropic({ apiKey });
           const msg = await anthropic.messages.create({
-            model: process.env.ANTHROPIC_MODEL || "claude-opus-5",
+            model: process.env.ANTHROPIC_MODEL_TPM || "claude-opus-5",
             max_tokens: 8000,
             system: buildSimulateSystemPrompt(companyName),
             messages: [
@@ -119,6 +120,8 @@ export const Route = createFileRoute("/api/tpm/simulate")({
               effort: "medium",
             },
           });
+
+          registraUso("tpm-simulacao", msg);
 
           if (msg.stop_reason === "refusal") {
             return Response.json({ error: "A IA recusou gerar a simulação." }, { status: 422 });

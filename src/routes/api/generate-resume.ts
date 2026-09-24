@@ -4,7 +4,7 @@ import { Packer } from "docx";
 import logoUrl from "@/assets/tailor-logo.png";
 import { extractResumeText } from "@/lib/extract-resume-text";
 import { buildDocx, type ResumeData } from "@/lib/resume-docx";
-
+import { registraUso } from "@/lib/ai-usage.server";
 
 // Structured-output contract: Claude is constrained to emit exactly this shape.
 const RESUME_JSON_SCHEMA = {
@@ -160,7 +160,13 @@ export const Route = createFileRoute("/api/generate-resume")({
                 used: usedToday,
                 limit: DAILY_LIMIT,
               },
-              { status: 429, headers: { "X-Usage-Used": String(usedToday), "X-Usage-Limit": String(DAILY_LIMIT) } },
+              {
+                status: 429,
+                headers: {
+                  "X-Usage-Used": String(usedToday),
+                  "X-Usage-Limit": String(DAILY_LIMIT),
+                },
+              },
             );
           }
           // --- end limit check ---
@@ -214,20 +220,27 @@ export const Route = createFileRoute("/api/generate-resume")({
                 let aiMessage: Anthropic.Message;
                 try {
                   const ai = anthropic.messages.stream({
-                    model: process.env.ANTHROPIC_MODEL || "claude-opus-5",
+                    // Sonnet 5, medido: 3 currículos difíceis (inglês com
+                    // cargos sobrepostos, sem formatação, sem descrições) x 3
+                    // rodadas deram ZERO falha nas regras do padrão Tailor —
+                    // verbo no infinitivo, pontuação, itálico, completude — com
+                    // 61% menos custo que o Opus 5, que pontuou igual.
+                    // Knob próprio: o TPM é pesquisa aberta e continua no Opus.
+                    model: process.env.ANTHROPIC_MODEL_CV || "claude-sonnet-5",
                     max_tokens: 32000,
                     system: SYSTEM_PROMPT,
                     messages: [{ role: "user", content: pdfText.slice(0, 60000) }],
                     output_config: {
                       format: { type: "json_schema", schema: RESUME_JSON_SCHEMA },
-                      // Extração sob regras fixas de formatação — medium é o
-                      // melhor custo/qualidade. Ajustável por ANTHROPIC_EFFORT.
-                      effort: (process.env.ANTHROPIC_EFFORT || "medium") as
-                        | "low"
-                        | "medium"
-                        | "high"
-                        | "xhigh"
-                        | "max",
+                      // Knob PRÓPRIO do gerador — antes os dois aplicativos
+                      // liam ANTHROPIC_EFFORT, então baixar o custo do TPM
+                      // mexia aqui sem querer.
+                      //
+                      // Fica em `medium`: medido, `low` economiza só 4%, porque
+                      // esta tarefa quase não usa raciocínio — o custo é o
+                      // próprio JSON de saída. Não vale o risco por 4%.
+                      effort: (process.env.ANTHROPIC_EFFORT_CV || "medium") as
+                        "low" | "medium" | "high" | "xhigh" | "max",
                     },
                   });
 
@@ -257,6 +270,7 @@ export const Route = createFileRoute("/api/generate-resume")({
                   });
 
                   aiMessage = await ai.finalMessage();
+                  registraUso("gerar-curriculo", aiMessage);
                 } catch (e) {
                   console.error("Anthropic error:", e);
                   if (e instanceof Anthropic.RateLimitError) {
@@ -269,7 +283,9 @@ export const Route = createFileRoute("/api/generate-resume")({
                     e instanceof Anthropic.APIError &&
                     (e.status === 529 || /overloaded/i.test(e.message))
                   ) {
-                    return fail("A IA está temporariamente sobrecarregada. Tente novamente em instantes.");
+                    return fail(
+                      "A IA está temporariamente sobrecarregada. Tente novamente em instantes.",
+                    );
                   }
                   if (e instanceof Anthropic.APIError && /credit|balance/i.test(e.message)) {
                     return fail("Créditos da Anthropic esgotados. Recarregue o saldo da conta.");
@@ -279,7 +295,9 @@ export const Route = createFileRoute("/api/generate-resume")({
 
                 if (aiMessage.stop_reason === "refusal") {
                   console.error("AI refused:", aiMessage.stop_details);
-                  return fail("A IA recusou processar este documento. Verifique o conteúdo do arquivo.");
+                  return fail(
+                    "A IA recusou processar este documento. Verifique o conteúdo do arquivo.",
+                  );
                 }
                 if (aiMessage.stop_reason === "max_tokens") {
                   return fail("O currículo é longo demais para ser processado de uma vez.");
@@ -313,7 +331,10 @@ export const Route = createFileRoute("/api/generate-resume")({
                 const toTitleCase = (s: string) =>
                   s
                     .toLocaleLowerCase("pt-BR")
-                    .replace(/(^|\s|-|')(\p{L})/gu, (_, sep, ch) => sep + ch.toLocaleUpperCase("pt-BR"));
+                    .replace(
+                      /(^|\s|-|')(\p{L})/gu,
+                      (_, sep, ch) => sep + ch.toLocaleUpperCase("pt-BR"),
+                    );
                 const nameParts = (parsed.name || "Candidato")
                   .trim()
                   .split(/\s+/)
@@ -388,7 +409,10 @@ export const Route = createFileRoute("/api/generate-resume")({
 // ---------- JSON parsing ----------
 
 function safeParseResumeJson(raw: string): ResumeData {
-  let s = raw.replace(/```json\s*/gi, "").replace(/```/g, "").trim();
+  let s = raw
+    .replace(/```json\s*/gi, "")
+    .replace(/```/g, "")
+    .trim();
   const start = s.indexOf("{");
   const end = s.lastIndexOf("}");
   if (start !== -1 && end !== -1 && end > start) s = s.slice(start, end + 1);
@@ -410,11 +434,23 @@ function safeParseResumeJson(raw: string): ResumeData {
     () => {
       // close unbalanced braces/brackets
       let t = s.replace(/,\s*([}\]])/g, "$1");
-      let braces = 0, brackets = 0, inStr = false, esc = false;
+      let braces = 0,
+        brackets = 0,
+        inStr = false,
+        esc = false;
       for (const c of t) {
-        if (esc) { esc = false; continue; }
-        if (c === "\\") { esc = true; continue; }
-        if (c === '"') { inStr = !inStr; continue; }
+        if (esc) {
+          esc = false;
+          continue;
+        }
+        if (c === "\\") {
+          esc = true;
+          continue;
+        }
+        if (c === '"') {
+          inStr = !inStr;
+          continue;
+        }
         if (inStr) continue;
         if (c === "{") braces++;
         else if (c === "}") braces--;

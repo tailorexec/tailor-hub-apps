@@ -65,12 +65,51 @@ export function TPMInputForm({
     onGenerate({ ...input, parsedAgenda: agenda });
   };
 
+  /**
+   * Converte para base64 reduzindo a imagem antes.
+   *
+   * Imagem é cobrada por área de pixel (~1 token a cada 28x28), não por
+   * informação: um print de tela em 4K custa vários milhares de tokens para
+   * mostrar o mesmo convite que 1280px de largura mostram. O texto de um
+   * convite continua legível nessa escala — é disso que a IA precisa.
+   *
+   * Se o navegador não der conta do canvas, cai para o arquivo original: ler a
+   * agenda é mais importante do que economizar.
+   */
   const paraBase64 = (file: File) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve((reader.result as string).split(",")[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
+    new Promise<{ base64: string; mimeType: string }>((resolve, reject) => {
+      const bruto = new FileReader();
+      bruto.onerror = reject;
+      bruto.onload = () => {
+        const dataUrl = bruto.result as string;
+        const semReduzir = () => resolve({ base64: dataUrl.split(",")[1], mimeType: file.type });
+
+        const img = new Image();
+        img.onerror = semReduzir;
+        img.onload = () => {
+          const MAX = 1280;
+          const escala = Math.min(1, MAX / Math.max(img.width, img.height));
+          if (escala === 1) return semReduzir();
+          try {
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.round(img.width * escala);
+            canvas.height = Math.round(img.height * escala);
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return semReduzir();
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            // PNG mantém o texto nítido; JPEG borraria letra pequena. O tipo
+            // volta junto porque deixou de ser o do arquivo original.
+            resolve({
+              base64: canvas.toDataURL("image/png").split(",")[1],
+              mimeType: "image/png",
+            });
+          } catch {
+            semReduzir();
+          }
+        };
+        img.src = dataUrl;
+      };
+      bruto.readAsDataURL(file);
     });
 
   const analisar = async (base64: string, mimeType: string) => {
@@ -131,10 +170,10 @@ export function TPMInputForm({
       });
       return;
     }
-    const base64 = await paraBase64(file);
-    setPreviewAgenda(`data:${file.type};base64,${base64}`);
+    const { base64, mimeType } = await paraBase64(file);
+    setPreviewAgenda(`data:${mimeType};base64,${base64}`);
     campo("agendaPrint", file);
-    await analisar(base64, file.type);
+    await analisar(base64, mimeType);
   };
 
   const soltar = (e: DragEvent) => {

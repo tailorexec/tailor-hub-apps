@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { requireApprovedUser } from "@/lib/tpm/auth.server";
 import { PARSE_AGENDA_SYSTEM_PROMPT } from "@/lib/tpm/prompts";
+import { registraUso } from "@/lib/ai-usage.server";
 
 const TIPOS_ACEITOS = ["image/png", "image/jpeg", "image/gif", "image/webp"] as const;
 type TipoAceito = (typeof TIPOS_ACEITOS)[number];
@@ -72,7 +73,7 @@ export const Route = createFileRoute("/api/tpm/parse-agenda")({
         try {
           const anthropic = new Anthropic({ apiKey });
           const msg = await anthropic.messages.create({
-            model: process.env.ANTHROPIC_MODEL || "claude-opus-5",
+            model: process.env.ANTHROPIC_MODEL_TPM || "claude-opus-5",
             max_tokens: 4000,
             system: PARSE_AGENDA_SYSTEM_PROMPT,
             messages: [
@@ -95,6 +96,8 @@ export const Route = createFileRoute("/api/tpm/parse-agenda")({
               effort: "low",
             },
           });
+
+          registraUso("tpm-ler-agenda", msg);
 
           if (msg.stop_reason === "refusal") {
             return Response.json({ error: "A IA recusou analisar esta imagem." }, { status: 422 });

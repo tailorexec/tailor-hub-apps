@@ -27,8 +27,13 @@ import {
   type ServerConnection,
 } from "./matching";
 import type { TPMInput } from "./types";
+import { registraUso } from "@/lib/ai-usage.server";
 
-const MODELO = () => process.env.ANTHROPIC_MODEL || "claude-opus-5";
+// Knob próprio do TPM. Fica no Opus: o briefing é pesquisa aberta na web, onde
+// a diferença entre modelos aparece de verdade — ao contrário do gerador de
+// currículo, que é extração sob regras fixas e foi medido rodando igual no
+// Sonnet 5.
+const MODELO = () => process.env.ANTHROPIC_MODEL_TPM || "claude-opus-5";
 
 /**
  * Teto de continuações do `pause_turn`.
@@ -121,6 +126,7 @@ async function perguntaCurta(
       output_config: { effort: "low" },
     });
     if (msg.stop_reason === "refusal") return null;
+    registraUso("tpm-auxiliar", msg);
     return textoDe(msg).trim();
   } catch (e) {
     // Estas chamadas são auxiliares: se falharem, o briefing ainda sai — só
@@ -316,7 +322,8 @@ Use estas informações para enriquecer o briefing. Pesquise cada participante i
       // fora do padrão. As chamadas menores (agenda, simulação, matching)
       // seguem com saída estruturada, porque os schemas delas cabem.
       output_config: {
-        effort: (process.env.ANTHROPIC_EFFORT || "high") as
+        // Knob PRÓPRIO do TPM — ver a nota em generate-resume.ts.
+        effort: (process.env.ANTHROPIC_EFFORT_TPM || "high") as
           "low" | "medium" | "high" | "xhigh" | "max",
       },
     });
@@ -333,6 +340,7 @@ Use estas informações para enriquecer o briefing. Pesquise cada participante i
         }
       }
     }
+    registraUso("tpm-briefing", msg, { buscas: buscasFeitas });
     onProgresso?.(buscasFeitas);
 
     if (msg.stop_reason !== "pause_turn") break;

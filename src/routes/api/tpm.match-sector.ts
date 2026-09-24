@@ -5,6 +5,7 @@ import { tpmAdmin } from "@/integrations/tpm/client.server";
 import { requireApprovedUser } from "@/lib/tpm/auth.server";
 import { expandirPorFamilia, extrairTagsUnicas, type CaseRow } from "@/lib/tpm/matching";
 import { MATCH_SECTOR_SYSTEM_PROMPT } from "@/lib/tpm/prompts";
+import { registraUso } from "@/lib/ai-usage.server";
 
 const MATCH_SCHEMA = {
   type: "object",
@@ -60,7 +61,7 @@ export const Route = createFileRoute("/api/tpm/match-sector")({
         try {
           const anthropic = new Anthropic({ apiKey });
           const msg = await anthropic.messages.create({
-            model: process.env.ANTHROPIC_MODEL || "claude-opus-5",
+            model: process.env.ANTHROPIC_MODEL_TPM || "claude-opus-5",
             max_tokens: 2000,
             system: MATCH_SECTOR_SYSTEM_PROMPT,
             messages: [
@@ -76,6 +77,8 @@ export const Route = createFileRoute("/api/tpm/match-sector")({
               effort: "low",
             },
           });
+
+          registraUso("tpm-busca-setor", msg);
 
           if (msg.stop_reason === "refusal") {
             return Response.json({ error: "A IA recusou a consulta." }, { status: 422 });
