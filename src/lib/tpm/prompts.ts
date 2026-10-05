@@ -213,13 +213,13 @@ REGRAS DE FONTE (as mais importantes deste prompt):
   devolva "facts" vazio. Um briefing honestamente vazio vale mais que um
   inventado: o consultor vai levar isso para uma reunião real.
 
-BUSCAS A EXECUTAR (faça de verdade, não só mentalmente):
-1. "[Empresa]" + site oficial, "sobre", institucional
-2. "[Empresa]" + notícias dos últimos 24 meses, aquisição, captação, expansão
-3. "[Empresa] CEO", "[Empresa] CHRO", "[Empresa] diretor RH", "[Empresa] diretor geral"
-4. "[Empresa]" + nomeação, troca de liderança, entrevista
-5. "[Empresa]" + concorrentes, market share, setor
-6. Para cada executivo identificado: "[Nome] [Empresa] LinkedIn"
+BUSCAS A EXECUTAR — NO MÁXIMO 4, nesta ordem de prioridade (faça de verdade):
+1. "[Empresa]" + notícias recentes, aquisição, expansão
+2. "[Empresa] CEO CHRO diretor RH"
+3. "[Empresa]" + troca de liderança, nomeação
+4. "[Empresa]" + concorrentes, setor
+Não busque cada executivo individualmente. Com 4 buscas feitas, PARE e escreva
+o JSON com o que tiver; o que faltar vai para "gaps".
 
 ==================================================
 A) CLUSTER: EXECUTIVOS-CHAVE (PRECISÃO MÁXIMA)

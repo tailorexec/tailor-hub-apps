@@ -112,7 +112,7 @@ export const Route = createFileRoute("/api/generate-resume")({
           if (!userRes.ok) {
             return Response.json({ error: "Sessão inválida." }, { status: 401 });
           }
-          const userJson = (await userRes.json()) as { id?: string };
+          const userJson = (await userRes.json()) as { id?: string; email?: string };
           const userId = userJson.id;
           if (!userId) {
             return Response.json({ error: "Sessão inválida." }, { status: 401 });
@@ -270,7 +270,7 @@ export const Route = createFileRoute("/api/generate-resume")({
                   });
 
                   aiMessage = await ai.finalMessage();
-                  registraUso("gerar-curriculo", aiMessage);
+                  registraUso("gerar-curriculo", aiMessage, { usuario: userJson.email ?? userId });
                 } catch (e) {
                   console.error("Anthropic error:", e);
                   if (e instanceof Anthropic.RateLimitError) {

@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { requireApprovedUser } from "@/lib/tpm/auth.server";
+import { esforcoTpm, modeloTpm } from "@/lib/tpm/modelo.server";
 import { PARSE_AGENDA_SYSTEM_PROMPT } from "@/lib/tpm/prompts";
 import { registraUso } from "@/lib/ai-usage.server";
 
@@ -73,7 +74,7 @@ export const Route = createFileRoute("/api/tpm/parse-agenda")({
         try {
           const anthropic = new Anthropic({ apiKey });
           const msg = await anthropic.messages.create({
-            model: process.env.ANTHROPIC_MODEL_TPM || "claude-opus-5",
+            model: modeloTpm(),
             max_tokens: 4000,
             system: PARSE_AGENDA_SYSTEM_PROMPT,
             messages: [
@@ -93,11 +94,11 @@ export const Route = createFileRoute("/api/tpm/parse-agenda")({
             ],
             output_config: {
               format: { type: "json_schema", schema: AGENDA_SCHEMA },
-              effort: "low",
+              ...esforcoTpm("low"),
             },
           });
 
-          registraUso("tpm-ler-agenda", msg);
+          registraUso("tpm-ler-agenda", msg, { usuario: gate.caller.email ?? gate.caller.userId });
 
           if (msg.stop_reason === "refusal") {
             return Response.json({ error: "A IA recusou analisar esta imagem." }, { status: 422 });

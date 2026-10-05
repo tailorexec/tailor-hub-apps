@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { tpmAdmin } from "@/integrations/tpm/client.server";
 import { requireApprovedUser } from "@/lib/tpm/auth.server";
+import { esforcoTpm, modeloTpm } from "@/lib/tpm/modelo.server";
 import { buildSimulateSystemPrompt } from "@/lib/tpm/prompts";
 import { registraUso } from "@/lib/ai-usage.server";
 
@@ -106,7 +107,7 @@ export const Route = createFileRoute("/api/tpm/simulate")({
         try {
           const anthropic = new Anthropic({ apiKey });
           const msg = await anthropic.messages.create({
-            model: process.env.ANTHROPIC_MODEL_TPM || "claude-opus-5",
+            model: modeloTpm(),
             max_tokens: 8000,
             system: buildSimulateSystemPrompt(companyName),
             messages: [
@@ -117,11 +118,11 @@ export const Route = createFileRoute("/api/tpm/simulate")({
             ],
             output_config: {
               format: { type: "json_schema", schema: CARDS_SCHEMA },
-              effort: "medium",
+              ...esforcoTpm("medium"),
             },
           });
 
-          registraUso("tpm-simulacao", msg);
+          registraUso("tpm-simulacao", msg, { usuario: gate.caller.email ?? gate.caller.userId });
 
           if (msg.stop_reason === "refusal") {
             return Response.json({ error: "A IA recusou gerar a simulação." }, { status: 422 });

@@ -27,23 +27,27 @@ import {
   type ServerConnection,
 } from "./matching";
 import type { TPMInput } from "./types";
+import { buscaNaWebTpm, esforcoTpm, modeloTpm } from "./modelo.server";
 import { registraUso } from "@/lib/ai-usage.server";
 
-// Knob próprio do TPM. Fica no Opus: o briefing é pesquisa aberta na web, onde
-// a diferença entre modelos aparece de verdade — ao contrário do gerador de
-// currículo, que é extração sob regras fixas e foi medido rodando igual no
-// Sonnet 5.
-const MODELO = () => process.env.ANTHROPIC_MODEL_TPM || "claude-opus-5";
+/**
+ * Teto de buscas na web por briefing.
+ *
+ * Era 12 por rodada, com até 6 rodadas. Cada busca custa por si e, pior, o
+ * texto dos resultados volta como entrada em toda chamada seguinte — foi isso
+ * que levou 3,3 milhões de tokens de entrada numa manhã. O prompt pede as 4
+ * buscas mais úteis; este número garante que não passe disso.
+ */
+const MAX_BUSCAS = 4;
 
 /**
  * Teto de continuações do `pause_turn`.
  *
- * O laço de ferramentas do servidor pausa a cada 10 iterações de busca e espera
- * ser retomado. Sem retomar, o briefing volta pela metade — e sem erro nenhum,
- * que é o pior jeito de quebrar. Sem teto, um modelo em loop de buscas gastaria
- * sem limite.
+ * O laço de ferramentas do servidor pausa a cada 10 iterações de busca. Com
+ * `MAX_BUSCAS` em 4 a pausa não deveria nem acontecer; a única retomada fica
+ * como rede, não como orçamento.
  */
-const MAX_CONTINUACOES = 5;
+const MAX_CONTINUACOES = 1;
 
 function textoDe(msg: Anthropic.Message) {
   return msg.content
@@ -113,20 +117,21 @@ function extrairJson(bruto: string): Record<string, unknown> {
 /** Chamada curta, sem ferramentas — classificação e filtro. */
 async function perguntaCurta(
   anthropic: Anthropic,
+  usuario: string,
   system: string,
   user: string,
   maxTokens = 1500,
 ): Promise<string | null> {
   try {
     const msg = await anthropic.messages.create({
-      model: MODELO(),
+      model: modeloTpm(),
       max_tokens: maxTokens,
       system,
       messages: [{ role: "user", content: user }],
-      output_config: { effort: "low" },
+      output_config: esforcoTpm("low"),
     });
     if (msg.stop_reason === "refusal") return null;
-    registraUso("tpm-auxiliar", msg);
+    registraUso("tpm-auxiliar", msg, { usuario });
     return textoDe(msg).trim();
   } catch (e) {
     // Estas chamadas são auxiliares: se falharem, o briefing ainda sai — só
@@ -169,6 +174,7 @@ export async function rasparWebsite(website: string | undefined): Promise<string
  */
 export async function calcularConexoes(
   anthropic: Anthropic,
+  usuario: string,
   input: TPMInput,
   cases: CaseRow[],
   websiteContent: string,
@@ -185,6 +191,7 @@ export async function calcularConexoes(
     : "";
   const desc = await perguntaCurta(
     anthropic,
+    usuario,
     PRE_ID_SYSTEM_PROMPT,
     `Empresa: "${input.companyName}"${input.website ? ` | Website: ${input.website}` : ""}${
       input.freeText ? ` | Contexto: ${input.freeText}` : ""
@@ -207,6 +214,7 @@ export async function calcularConexoes(
 
   const bruto = await perguntaCurta(
     anthropic,
+    usuario,
     MATCH_SECTOR_SYSTEM_PROMPT,
     `Empresa pesquisada: "${partes.join(" ")}"\n\nSetores/tags disponíveis na base (cada um é uma tag individual): ${JSON.stringify(
       tagsDaBase,
@@ -236,6 +244,7 @@ export async function calcularConexoes(
   //    próprio é o problema — aí vale mais a lista inteira.
   const aprovadosBruto = await perguntaCurta(
     anthropic,
+    usuario,
     PRECISION_SYSTEM_PROMPT,
     `Empresa-alvo: "${descricaoEmpresa}"\nSetor identificado: "${match.mainSector ?? ""}"\n\nCandidatos:\n${candidatos
       .map((c) => `${c.caseName} (${c.sector})`)
@@ -273,6 +282,7 @@ export interface ResultadoGeracao {
  */
 export async function gerarBriefing(
   anthropic: Anthropic,
+  usuario: string,
   input: TPMInput,
   conexoes: ServerConnection[],
   websiteContent: string,
@@ -310,22 +320,18 @@ Use estas informações para enriquecer o briefing. Pesquise cada participante i
 
   for (let i = 0; i <= MAX_CONTINUACOES; i++) {
     const stream = anthropic.messages.stream({
-      model: MODELO(),
-      max_tokens: 32000,
+      model: modeloTpm(),
+      max_tokens: 16000,
       system,
       messages,
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 12 }],
+      tools: [buscaNaWebTpm(MAX_BUSCAS)],
       // SEM `format: json_schema` aqui, de propósito. O schema do briefing é
       // grande demais para a saída estruturada: a API recusa a requisição com
       // 400 "The compiled grammar is too large". Foi testado, não é teoria.
       // O formato fica a cargo do prompt, e `extrairJson` trata o que vier
       // fora do padrão. As chamadas menores (agenda, simulação, matching)
       // seguem com saída estruturada, porque os schemas delas cabem.
-      output_config: {
-        // Knob PRÓPRIO do TPM — ver a nota em generate-resume.ts.
-        effort: (process.env.ANTHROPIC_EFFORT_TPM || "high") as
-          "low" | "medium" | "high" | "xhigh" | "max",
-      },
+      output_config: esforcoTpm("low"),
     });
     msg = await stream.finalMessage();
 
@@ -340,7 +346,7 @@ Use estas informações para enriquecer o briefing. Pesquise cada participante i
         }
       }
     }
-    registraUso("tpm-briefing", msg, { buscas: buscasFeitas });
+    registraUso("tpm-briefing", msg, { usuario, buscas: buscasFeitas });
     onProgresso?.(buscasFeitas);
 
     if (msg.stop_reason !== "pause_turn") break;
@@ -355,7 +361,9 @@ Use estas informações para enriquecer o briefing. Pesquise cada participante i
     throw new Error("A IA recusou gerar este briefing. Revise os dados informados.");
   }
   if (msg.stop_reason === "max_tokens") {
-    throw new Error("O briefing ficou longo demais para uma única resposta.");
+    // Não descarta: a pesquisa já foi paga. `extrairJson` fecha o que ficou
+    // aberto e o briefing sai incompleto em vez de sair nada.
+    console.warn("[tpm] briefing cortado no teto de tokens; aproveitando o que veio");
   }
   if (msg.stop_reason === "pause_turn") {
     throw new Error(

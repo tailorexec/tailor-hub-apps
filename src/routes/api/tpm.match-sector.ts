@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { tpmAdmin } from "@/integrations/tpm/client.server";
 import { requireApprovedUser } from "@/lib/tpm/auth.server";
+import { esforcoTpm, modeloTpm } from "@/lib/tpm/modelo.server";
 import { expandirPorFamilia, extrairTagsUnicas, type CaseRow } from "@/lib/tpm/matching";
 import { MATCH_SECTOR_SYSTEM_PROMPT } from "@/lib/tpm/prompts";
 import { registraUso } from "@/lib/ai-usage.server";
@@ -61,7 +62,7 @@ export const Route = createFileRoute("/api/tpm/match-sector")({
         try {
           const anthropic = new Anthropic({ apiKey });
           const msg = await anthropic.messages.create({
-            model: process.env.ANTHROPIC_MODEL_TPM || "claude-opus-5",
+            model: modeloTpm(),
             max_tokens: 2000,
             system: MATCH_SECTOR_SYSTEM_PROMPT,
             messages: [
@@ -74,11 +75,11 @@ export const Route = createFileRoute("/api/tpm/match-sector")({
             ],
             output_config: {
               format: { type: "json_schema", schema: MATCH_SCHEMA },
-              effort: "low",
+              ...esforcoTpm("low"),
             },
           });
 
-          registraUso("tpm-busca-setor", msg);
+          registraUso("tpm-busca-setor", msg, { usuario: gate.caller.email ?? gate.caller.userId });
 
           if (msg.stop_reason === "refusal") {
             return Response.json({ error: "A IA recusou a consulta." }, { status: 422 });

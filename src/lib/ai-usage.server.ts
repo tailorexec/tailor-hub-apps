@@ -14,6 +14,13 @@
 import type Anthropic from "@anthropic-ai/sdk";
 
 interface UsoExtra {
+  /**
+   * Quem disparou a chamada (e-mail, ou o id quando não há e-mail). Sem isso a
+   * fatura diz QUANTO e o log diz ONDE, mas ninguém sabe dizer QUEM — foi assim
+   * em 05/10/2026, quando o TPM gastou ~US$ 21 em duas horas e não deu para
+   * apontar o consultor.
+   */
+  usuario?: string;
   /** Buscas na web feitas no turno — são cobradas por busca, fora dos tokens. */
   buscas?: number;
 }
@@ -26,6 +33,7 @@ export function registraUso(
   const u = msg.usage;
   const campos = [
     `rota=${rota}`,
+    `usuario=${extra.usuario ?? "?"}`,
     `modelo=${msg.model}`,
     `entrada=${u.input_tokens}`,
     `saida=${u.output_tokens}`,
