@@ -8,6 +8,47 @@ export type Database = {
   };
   public: {
     Tables: {
+      hub_avisos: {
+        Row: {
+          created_at: string;
+          criado_por: string | null;
+          id: string;
+          publicado: boolean;
+          texto: string;
+        };
+        Insert: {
+          created_at?: string;
+          criado_por?: string | null;
+          id?: string;
+          publicado?: boolean;
+          texto: string;
+        };
+        Update: {
+          created_at?: string;
+          criado_por?: string | null;
+          id?: string;
+          publicado?: boolean;
+          texto?: string;
+        };
+        Relationships: [];
+      };
+      // Tabela do site institucional (blog). O hub só LÊ, e só estas colunas —
+      // o resto da tabela é do site e fica de fora de propósito.
+      posts: {
+        Row: {
+          cover_image_url: string | null;
+          excerpt: string | null;
+          id: string;
+          language: string;
+          published_at: string | null;
+          slug: string;
+          status: string;
+          title: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       generations: {
         Row: {
           created_at: string;

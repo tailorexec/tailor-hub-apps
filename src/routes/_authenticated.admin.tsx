@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import TailorHeader from "@/components/TailorHeader";
 import TailorFooter from "@/components/TailorFooter";
+import { AvisosAdmin } from "@/components/hub/AvisosAdmin";
 import {
   Dialog,
   DialogContent,
@@ -409,6 +410,8 @@ function AdminPage() {
             </ul>
           )}
         </div>
+
+        <AvisosAdmin />
       </main>
 
       <Dialog

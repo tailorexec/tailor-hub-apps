@@ -197,3 +197,29 @@
     border-bottom: 1px solid var(--color-border);
   }
 }
+
+/* Faixa de avisos da página inicial. O trilho tem o conteúdo DUAS vezes e anda
+   metade da própria largura: quando a primeira cópia sai, a segunda está
+   exatamente onde ela começou, e o laço não dá pulo. */
+@keyframes hub-avisos-desliza {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.hub-avisos-trilho {
+  animation: hub-avisos-desliza var(--hub-avisos-duracao, 40s) linear infinite;
+}
+
+.hub-avisos-trilho:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hub-avisos-trilho {
+    animation: none;
+  }
+}
