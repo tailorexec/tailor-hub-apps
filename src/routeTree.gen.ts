@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
+import { Route as AuthenticatedApresentacoesRouteImport } from './routes/_authenticated.apresentacoes'
 import { Route as AuthenticatedGeneratorRouteImport } from './routes/_authenticated.generator'
 import { Route as AuthenticatedNpsRouteImport } from './routes/_authenticated.nps'
 import { Route as ApiAdminSetPasswordRouteImport } from './routes/api/admin-set-password'
@@ -57,6 +58,12 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedApresentacoesRoute =
+  AuthenticatedApresentacoesRouteImport.update({
+    id: '/apresentacoes',
+    path: '/apresentacoes',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedGeneratorRoute = AuthenticatedGeneratorRouteImport.update({
   id: '/generator',
   path: '/generator',
@@ -153,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/apresentacoes': typeof AuthenticatedApresentacoesRoute
   '/generator': typeof AuthenticatedGeneratorRoute
   '/nps': typeof AuthenticatedNpsRoute
   '/api/admin-set-password': typeof ApiAdminSetPasswordRoute
@@ -177,6 +185,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/apresentacoes': typeof AuthenticatedApresentacoesRoute
   '/generator': typeof AuthenticatedGeneratorRoute
   '/nps': typeof AuthenticatedNpsRoute
   '/api/admin-set-password': typeof ApiAdminSetPasswordRoute
@@ -203,6 +212,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/apresentacoes': typeof AuthenticatedApresentacoesRoute
   '/_authenticated/generator': typeof AuthenticatedGeneratorRoute
   '/_authenticated/nps': typeof AuthenticatedNpsRoute
   '/api/admin-set-password': typeof ApiAdminSetPasswordRoute
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/admin'
+    | '/apresentacoes'
     | '/generator'
     | '/nps'
     | '/api/admin-set-password'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/admin'
+    | '/apresentacoes'
     | '/generator'
     | '/nps'
     | '/api/admin-set-password'
@@ -278,6 +290,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/_authenticated/admin'
+    | '/_authenticated/apresentacoes'
     | '/_authenticated/generator'
     | '/_authenticated/nps'
     | '/api/admin-set-password'
@@ -353,6 +366,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/apresentacoes': {
+      id: '/_authenticated/apresentacoes'
+      path: '/apresentacoes'
+      fullPath: '/apresentacoes'
+      preLoaderRoute: typeof AuthenticatedApresentacoesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/generator': {
@@ -486,6 +506,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedApresentacoesRoute: typeof AuthenticatedApresentacoesRoute
   AuthenticatedGeneratorRoute: typeof AuthenticatedGeneratorRoute
   AuthenticatedNpsRoute: typeof AuthenticatedNpsRoute
   AuthenticatedTpmCasesRoute: typeof AuthenticatedTpmCasesRoute
@@ -495,6 +516,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedApresentacoesRoute: AuthenticatedApresentacoesRoute,
   AuthenticatedGeneratorRoute: AuthenticatedGeneratorRoute,
   AuthenticatedNpsRoute: AuthenticatedNpsRoute,
   AuthenticatedTpmCasesRoute: AuthenticatedTpmCasesRoute,

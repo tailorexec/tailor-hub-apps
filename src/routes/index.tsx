@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { BarChart3, FileText, Lock, Target } from "lucide-react";
+import { BarChart3, FileText, Lock, Presentation, Target } from "lucide-react";
 import logo from "@/assets/tailor-logo.png";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -49,6 +49,15 @@ function HubPage() {
       description: "Briefing estratégico antes da reunião, com pesquisa e cases Tailor.",
       icon: <Target className="w-8 h-8" />,
       target: "/tpm",
+      available: true,
+    },
+    {
+      id: "apresentacoes",
+      name: "Apresentações Padrão 2026",
+      description:
+        "Comercial, kickoff, status e shortlist: os modelos oficiais da Tailor no Canva.",
+      icon: <Presentation className="w-8 h-8" />,
+      target: "/apresentacoes",
       available: true,
     },
   ];
