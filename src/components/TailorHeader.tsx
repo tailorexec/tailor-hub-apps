@@ -23,11 +23,10 @@ const TailorHeader = ({ userEmail, isAdmin, onAdmin, onSignOut }: TailorHeaderPr
           <img src={logo} alt="Tailor — made for people" className="h-8 md:h-9 w-auto" />
         </Link>
         <div className="flex items-center gap-3">
-          <span className="hidden md:inline-flex items-center rounded-full border border-border px-4 py-1.5 text-[11px] font-bold tracking-[0.18em] text-foreground/80">
-            PADRÃO TAILOR · VERSÃO 2026
-          </span>
           {userEmail && (
             <>
+              {/* Ordem fixa: quem está logado, Início, Admin (só admin), Sair. */}
+              <span className="hidden md:inline text-xs text-muted-foreground">{userEmail}</span>
               {/* Volta ao início de qualquer app. O logo também leva para lá,
                   mas ninguém adivinha isso — o botão deixa explícito. */}
               <Link
@@ -49,7 +48,6 @@ const TailorHeader = ({ userEmail, isAdmin, onAdmin, onSignOut }: TailorHeaderPr
                   Admin
                 </button>
               )}
-              <span className="hidden lg:inline text-xs text-muted-foreground">{userEmail}</span>
               {onSignOut && (
                 <button
                   onClick={onSignOut}

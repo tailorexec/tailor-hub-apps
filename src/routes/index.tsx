@@ -34,10 +34,10 @@ const APPS: AppTile[] = [
     available: true,
   },
   {
-    id: "nps",
-    name: "NPS Tailor",
-    description: "Dashboard e formulário de pesquisa de experiência (NPS).",
-    target: "/nps",
+    id: "apresentacoes",
+    name: "Apresentações 2026",
+    description: "Comercial, kickoff, status e shortlist: os modelos padrão da Tailor no Canva.",
+    target: "/apresentacoes",
     available: true,
   },
   {
@@ -48,10 +48,10 @@ const APPS: AppTile[] = [
     available: true,
   },
   {
-    id: "apresentacoes",
-    name: "Apresentações 2026",
-    description: "Comercial, kickoff, status e shortlist: os modelos padrão da Tailor no Canva.",
-    target: "/apresentacoes",
+    id: "nps",
+    name: "NPS",
+    description: "Dashboard e formulário de pesquisa de experiência (NPS).",
+    target: "/nps",
     available: true,
   },
 ];

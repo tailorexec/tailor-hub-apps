@@ -91,24 +91,18 @@ function ApresentacoesPage() {
         <h1 className="text-2xl md:text-4xl font-bold text-foreground tracking-tight">
           Apresentações Padrão Tailor 2026
         </h1>
-        <p className="mt-1.5 md:mt-2 text-sm md:text-base text-muted-foreground max-w-2xl">
-          Os modelos oficiais da Tailor no Canva. Use sempre estes como ponto de partida para manter
-          o padrão visual em todos os clientes.
-        </p>
 
+        {/* Uma linha só no desktop, do tamanho do texto. No celular quebra em
+            vez de cortar: cortado, o aviso perderia justamente o "faça uma cópia". */}
         <div
           role="alert"
-          className="mt-6 md:mt-8 flex gap-3 md:gap-4 rounded-2xl border-[1.5px] border-primary/50 bg-primary/5 p-4 md:p-5"
+          className="mt-5 md:mt-6 flex w-fit max-w-full items-start md:items-center gap-2.5 rounded-xl border border-primary/50 bg-primary/5 px-4 py-2.5"
         >
-          <ShieldAlert className="w-5 h-5 md:w-6 md:h-6 text-primary shrink-0 mt-0.5" />
-          <div>
-            <p className="font-bold text-foreground">Nunca edite o original.</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Os cards abaixo abrem o arquivo oficial, que é o mesmo para toda a equipe.{" "}
-              <strong>Para usar, faça sempre uma cópia para o seu Canva</strong> e edite só a sua
-              cópia — o passo a passo está logo abaixo.
-            </p>
-          </div>
+          <ShieldAlert className="w-4 h-4 text-primary shrink-0 mt-0.5 md:mt-0" />
+          <p className="text-sm text-muted-foreground">
+            <strong className="text-foreground">Nunca edite o original.</strong> Faça sempre uma
+            cópia para o seu Canva e edite só a cópia — o passo a passo está logo abaixo.
+          </p>
         </div>
 
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
