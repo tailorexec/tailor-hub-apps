@@ -287,10 +287,10 @@ function AdminPage() {
       />
       <main className="flex-1 w-full max-w-[960px] mx-auto px-4 md:px-6 py-12">
         <button
-          onClick={() => navigate({ to: "/generator" })}
+          onClick={() => navigate({ to: "/" })}
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4"
         >
-          <ArrowLeft className="w-3.5 h-3.5" /> Voltar ao gerador
+          <ArrowLeft className="w-3.5 h-3.5" /> Voltar ao hub
         </button>
         <h1 className="text-2xl font-bold text-foreground mb-1">Aprovação de cadastros</h1>
         <p className="text-sm text-muted-foreground mb-6">

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { LogOut, ShieldCheck } from "lucide-react";
+import { House, LogOut, ShieldCheck } from "lucide-react";
 
 import logo from "@/assets/tailor-logo.png";
 
@@ -28,6 +28,17 @@ const TailorHeader = ({ userEmail, isAdmin, onAdmin, onSignOut }: TailorHeaderPr
           </span>
           {userEmail && (
             <>
+              {/* Volta ao início de qualquer app. O logo também leva para lá,
+                  mas ninguém adivinha isso — o botão deixa explícito. */}
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-[11px] font-semibold text-foreground hover:bg-accent transition-colors"
+                title="Voltar à página inicial do hub"
+                aria-label="Voltar à página inicial do hub"
+              >
+                <House className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Início</span>
+              </Link>
               {isAdmin && onAdmin && (
                 <button
                   onClick={onAdmin}
