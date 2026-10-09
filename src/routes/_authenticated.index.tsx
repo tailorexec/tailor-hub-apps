@@ -4,9 +4,8 @@ import logo from "@/assets/tailor-logo.png";
 import { AppPreview, type PreviewId } from "@/components/hub/AppPreview";
 import { AvisosFaixa } from "@/components/hub/AvisosFaixa";
 import { BlogRecente } from "@/components/hub/BlogRecente";
-import { useAuth } from "@/hooks/useAuth";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Tailor Hub Apps" },
@@ -58,15 +57,12 @@ const APPS: AppTile[] = [
 
 function HubPage() {
   const navigate = useNavigate();
-  const { session } = useAuth();
 
+  // A página só abre logado e aprovado (ver _authenticated.tsx), então o
+  // clique vai direto para o app.
   const handleClick = (app: AppTile) => {
     if (!app.available) return;
-    if (session) {
-      navigate({ to: app.target });
-    } else {
-      navigate({ to: "/login", search: { redirect: app.target } });
-    }
+    navigate({ to: app.target });
   };
 
   return (

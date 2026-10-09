@@ -72,7 +72,10 @@ function NpsPage() {
   const [openComment, setOpenComment] = useState<string | null>(null);
 
   const isAdmin = accessStatus === "admin";
-  const hasAccess = accessStatus === "approved" || accessStatus === "admin";
+  // Conta aprovada no hub usa o NPS sem pedir acesso à parte — a porta é uma só
+  // (_authenticated.tsx). O nps_access segue valendo para quem é admin do NPS.
+  const hasAccess =
+    accessStatus === "approved" || accessStatus === "admin" || profile?.hub_status === "approved";
 
   const formUrl =
     typeof window !== "undefined" ? `${window.location.origin}/nps/form` : "/nps/form";

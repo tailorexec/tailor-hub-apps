@@ -20,7 +20,7 @@ function SignupPage() {
   const [confirmacaoPendente, setConfirmacaoPendente] = useState(false);
 
   useEffect(() => {
-    if (!loading && session) navigate({ to: "/generator" });
+    if (!loading && session) navigate({ to: "/" });
   }, [loading, session, navigate]);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -65,7 +65,7 @@ function SignupPage() {
       title: "Cadastro realizado",
       description: "Aguarde a aprovação de um administrador para acessar o gerador.",
     });
-    navigate({ to: "/generator" });
+    navigate({ to: "/" });
   };
 
   return (
