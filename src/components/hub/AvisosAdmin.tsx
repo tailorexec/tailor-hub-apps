@@ -122,8 +122,8 @@ export function AvisosAdmin() {
           </div>
         ) : avisos.length === 0 ? (
           <p className="p-6 text-sm text-muted-foreground text-center">
-            Nenhum aviso ainda. Enquanto isso, a faixa mostra “Sem avisos e lembretes, keep
-            pushing! Utilizem as ferramentas de forma consciente.”
+            Nenhum aviso ainda. Enquanto isso, a faixa mostra “Sem avisos e lembretes, keep pushing!
+            Utilizem as ferramentas de forma consciente.”
           </p>
         ) : (
           <ul className="divide-y divide-border">

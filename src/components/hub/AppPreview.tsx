@@ -7,9 +7,26 @@
 // O fundo escuro com brilho vermelho é o mesmo do topo do gerador
 // (TailorHero), para os cards parecerem parte da mesma marca.
 
+import type { ReactNode } from "react";
+
 export type PreviewId = "cv" | "nps" | "tpm" | "apresentacoes";
 
 export function AppPreview({ id }: { id: PreviewId }) {
+  return (
+    <MolduraPreview>
+      {id === "cv" && <Curriculo />}
+      {id === "nps" && <Nps />}
+      {id === "tpm" && <Briefing />}
+      {id === "apresentacoes" && <Slides />}
+    </MolduraPreview>
+  );
+}
+
+/**
+ * Metade de cima de um card: fundo escuro, brilho vermelho e a miniatura no
+ * centro, que sobe um pouco no hover. O card que a usa precisa ter `group`.
+ */
+export function MolduraPreview({ children }: { children: ReactNode }) {
   return (
     <div
       aria-hidden
@@ -22,16 +39,13 @@ export function AppPreview({ id }: { id: PreviewId }) {
         }}
       />
       <div className="relative transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03]">
-        {id === "cv" && <Curriculo />}
-        {id === "nps" && <Nps />}
-        {id === "tpm" && <Briefing />}
-        {id === "apresentacoes" && <Slides />}
+        {children}
       </div>
     </div>
   );
 }
 
-const Linha = ({ w, className = "bg-neutral-200" }: { w: string; className?: string }) => (
+export const Linha = ({ w, className = "bg-neutral-200" }: { w: string; className?: string }) => (
   <div className={`h-1.5 rounded-full ${className}`} style={{ width: w }} />
 );
 

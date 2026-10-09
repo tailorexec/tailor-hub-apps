@@ -1,17 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import {
-  ArrowLeft,
-  Briefcase,
-  ClipboardList,
-  Copy,
-  ExternalLink,
-  ListChecks,
-  Rocket,
-  ShieldAlert,
-} from "lucide-react";
+import { ArrowLeft, ArrowUpRight, ShieldAlert } from "lucide-react";
 
 import TailorFooter from "@/components/TailorFooter";
 import TailorHeader from "@/components/TailorHeader";
+import { MolduraPreview } from "@/components/hub/AppPreview";
+import { SlidePreview, type SlideId } from "@/components/hub/SlidePreview";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/_authenticated/apresentacoes")({
@@ -21,39 +14,35 @@ export const Route = createFileRoute("/_authenticated/apresentacoes")({
   component: ApresentacoesPage,
 });
 
-// Os links abrem o ORIGINAL no Canva, em modo de edição. Por isso o aviso de
-// "faça uma cópia" vem antes dos botões, e não depois: quem chega aqui com
-// pressa clica no primeiro botão que vê.
-const APRESENTACOES = [
+// Os links abrem o ORIGINAL no Canva. Desde 09/10/2026 o compartilhamento é só
+// de visualização, mas o aviso de "faça uma cópia" continua antes dos cards:
+// quem chega com pressa clica no primeiro que vê.
+const APRESENTACOES: { id: SlideId; nome: string; descricao: string; url: string }[] = [
   {
     id: "comercial",
-    nome: "Apresentação Comercial",
+    nome: "Comercial",
     descricao: "Para a primeira reunião com o cliente: quem é a Tailor e como trabalhamos.",
-    icone: Briefcase,
     url: "https://canva.link/apresentacao-comercial-tailor-2026",
   },
   {
     id: "kickoff",
     nome: "Kickoff",
     descricao: "Para abrir o projeto com o cliente: escopo, perfil da posição e cronograma.",
-    icone: Rocket,
     url: "https://canva.link/kickoff-padrao-tailor-2026",
   },
   {
     id: "status",
     nome: "Status",
     descricao: "Para as reuniões de acompanhamento: andamento do processo e próximos passos.",
-    icone: ClipboardList,
     url: "https://canva.link/status-padrao-tailor-2026",
   },
   {
     id: "shortlist",
     nome: "Shortlist",
     descricao: "Para apresentar ao cliente os candidatos finalistas.",
-    icone: ListChecks,
     url: "https://canva.link/shortlist-padrao-tailor-2026",
   },
-] as const;
+];
 
 const PASSOS = [
   {
@@ -91,7 +80,7 @@ function ApresentacoesPage() {
         }}
       />
 
-      <main className="flex-1 w-full max-w-[1100px] mx-auto px-4 md:px-6 py-8 md:py-10">
+      <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-6 md:px-10 py-8 md:py-12">
         <button
           onClick={() => navigate({ to: "/" })}
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4"
@@ -99,69 +88,69 @@ function ApresentacoesPage() {
           <ArrowLeft className="w-3.5 h-3.5" /> Voltar ao hub
         </button>
 
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+        <h1 className="text-2xl md:text-4xl font-bold text-foreground tracking-tight">
           Apresentações Padrão Tailor 2026
         </h1>
-        <p className="mt-2 text-sm md:text-base text-muted-foreground max-w-2xl">
+        <p className="mt-1.5 md:mt-2 text-sm md:text-base text-muted-foreground max-w-2xl">
           Os modelos oficiais da Tailor no Canva. Use sempre estes como ponto de partida para manter
           o padrão visual em todos os clientes.
         </p>
 
         <div
           role="alert"
-          className="mt-6 flex gap-4 rounded-2xl border-[1.5px] border-primary/50 bg-primary/5 p-5"
+          className="mt-6 md:mt-8 flex gap-3 md:gap-4 rounded-2xl border-[1.5px] border-primary/50 bg-primary/5 p-4 md:p-5"
         >
-          <ShieldAlert className="w-6 h-6 text-primary shrink-0 mt-0.5" />
+          <ShieldAlert className="w-5 h-5 md:w-6 md:h-6 text-primary shrink-0 mt-0.5" />
           <div>
             <p className="font-bold text-foreground">Nunca edite o original.</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Os botões abaixo abrem o arquivo oficial, que é o mesmo para toda a equipe. Qualquer
-              alteração feita nele aparece para todo mundo.{" "}
-              <strong>Antes de mexer em qualquer coisa, faça uma cópia para o seu Canva</strong> — o
-              passo a passo está logo abaixo.
+              Os cards abaixo abrem o arquivo oficial, que é o mesmo para toda a equipe.{" "}
+              <strong>Para usar, faça sempre uma cópia para o seu Canva</strong> e edite só a sua
+              cópia — o passo a passo está logo abaixo.
             </p>
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {APRESENTACOES.map(({ id, nome, descricao, icone: Icone, url }) => (
-            <div
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {APRESENTACOES.map(({ id, nome, descricao, url }) => (
+            <a
               key={id}
-              className="rounded-2xl border border-border bg-card p-6 flex flex-col gap-5 transition-all hover:border-primary hover:shadow-lg"
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative overflow-hidden rounded-2xl border border-border bg-card text-left transition-all hover:border-primary hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex flex-col"
             >
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                  <Icone className="w-6 h-6" />
+              <MolduraPreview>
+                <SlidePreview id={id} />
+              </MolduraPreview>
+              <div className="flex flex-1 flex-col p-4">
+                <div className="truncate text-[15px] font-bold leading-6 text-foreground">
+                  {nome}
                 </div>
-                <div>
-                  <div className="text-lg font-bold text-foreground">{nome}</div>
-                  <p className="mt-1 text-sm text-muted-foreground">{descricao}</p>
-                </div>
+                <p className="mt-1 text-sm leading-5 text-muted-foreground line-clamp-3">
+                  {descricao}
+                </p>
+                <span className="mt-auto pt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                  Abrir no Canva
+                  <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </span>
               </div>
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-              >
-                Abrir no Canva <ExternalLink className="w-4 h-4" />
-              </a>
-            </div>
+            </a>
           ))}
         </div>
 
-        <section className="mt-10">
-          <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
-            <Copy className="w-5 h-5 text-primary" /> Como fazer a sua cópia
+        <section className="mt-10 md:mt-14">
+          <h2 className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+            Como fazer a sua cópia
           </h2>
-          <ol className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <ol className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {PASSOS.map((passo, i) => (
-              <li key={passo.titulo} className="rounded-2xl border border-border bg-card p-5">
-                <span className="inline-flex w-8 h-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
-                  {i + 1}
-                </span>
-                <div className="mt-3 font-bold text-foreground">{passo.titulo}</div>
-                <p className="mt-1 text-sm text-muted-foreground">{passo.texto}</p>
+              <li key={passo.titulo} className="rounded-2xl border border-border bg-card p-4">
+                <span className="text-3xl font-black leading-none text-primary">{i + 1}</span>
+                <div className="mt-3 text-[15px] font-bold leading-6 text-foreground">
+                  {passo.titulo}
+                </div>
+                <p className="mt-1 text-sm leading-5 text-muted-foreground">{passo.texto}</p>
               </li>
             ))}
           </ol>
