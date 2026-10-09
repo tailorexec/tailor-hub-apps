@@ -214,12 +214,34 @@
   animation: hub-avisos-desliza var(--hub-avisos-duracao, 40s) linear infinite;
 }
 
-.hub-avisos-trilho:hover {
+/* Frase única: o elemento tem recuo de 100% da faixa + a largura do texto, e
+   anda a própria largura inteira — entra pela direita e sai toda pela esquerda. */
+@keyframes hub-avisos-atravessa {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.hub-avisos-unico {
+  animation: hub-avisos-atravessa var(--hub-avisos-duracao, 22s) linear infinite;
+}
+
+.hub-avisos-trilho:hover,
+.hub-avisos-unico:hover {
   animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hub-avisos-trilho {
+  .hub-avisos-trilho,
+  .hub-avisos-unico {
     animation: none;
+  }
+
+  /* Parada, a frase única ficaria escondida no recuo: mostra no começo. */
+  .hub-avisos-unico {
+    padding-left: 1.5rem;
   }
 }

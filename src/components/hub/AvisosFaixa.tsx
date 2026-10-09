@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-const SEM_AVISOS = "Sem avisos e lembretes no momento, keep pushing!";
+const SEM_AVISOS =
+  "Sem avisos e lembretes, keep pushing! Utilizem as ferramentas de forma consciente.";
 
 /** Com quantos caracteres uma volta do trilho fica mais larga que a tela. */
 const CARACTERES_MINIMOS = 220;
@@ -50,7 +51,8 @@ export function AvisosFaixa() {
 
   if (avisos === null) return null;
 
-  const itens = avisos.length > 0 ? avisos : [SEM_AVISOS];
+  const semAvisos = avisos.length === 0;
+  const itens = semAvisos ? [SEM_AVISOS] : avisos;
 
   // Repete a lista até uma volta ser mais larga que a tela; senão, com um aviso
   // curto, sobraria um buraco vazio antes da repetição.
@@ -62,7 +64,7 @@ export function AvisosFaixa() {
 
   return (
     <div className="w-full border-b border-border bg-neutral-500/[0.07] backdrop-blur-sm">
-      <div className="flex items-stretch h-10 md:h-11">
+      <div className="flex items-stretch h-8 md:h-[35px]">
         <div className="relative z-10 flex shrink-0 items-center gap-2 bg-primary px-3 md:px-5 text-[11px] md:text-xs font-bold uppercase tracking-[0.16em] text-primary-foreground">
           <Megaphone className="w-3.5 h-3.5 md:w-4 md:h-4" aria-hidden />
           <span className="hidden sm:inline">Tailor Avisos</span>
@@ -74,24 +76,38 @@ export function AvisosFaixa() {
           role="marquee"
           aria-label={`Avisos: ${itens.join(". ")}`}
         >
-          <div
-            className="hub-avisos-trilho flex w-max h-full items-center"
-            style={{ ["--hub-avisos-duracao" as string]: `${duracao}s` }}
-            aria-hidden
-          >
-            {[0, 1].map((copia) => (
-              <div key={copia} className="flex items-center">
-                {volta.map((texto, i) => (
-                  <span key={i} className="flex items-center">
-                    <span className="px-6 md:px-8 text-sm text-foreground/80 whitespace-nowrap">
-                      {texto}
+          {semAvisos ? (
+            // Sem aviso, a frase passa UMA vez de cada vez: entra pela direita,
+            // atravessa e só reaparece depois de sair. O recuo de 100% é o que
+            // a faz começar fora da faixa, do lado direito.
+            <div className="flex h-full items-center" aria-hidden>
+              <span
+                className="hub-avisos-unico inline-block pl-[100%] text-sm text-foreground/80 whitespace-nowrap"
+                style={{ ["--hub-avisos-duracao" as string]: "22s" }}
+              >
+                {SEM_AVISOS}
+              </span>
+            </div>
+          ) : (
+            <div
+              className="hub-avisos-trilho flex w-max h-full items-center"
+              style={{ ["--hub-avisos-duracao" as string]: `${duracao}s` }}
+              aria-hidden
+            >
+              {[0, 1].map((copia) => (
+                <div key={copia} className="flex items-center">
+                  {volta.map((texto, i) => (
+                    <span key={i} className="flex items-center">
+                      <span className="px-6 md:px-8 text-sm text-foreground/80 whitespace-nowrap">
+                        {texto}
+                      </span>
+                      <span className="text-[8px] text-primary">●</span>
                     </span>
-                    <span className="text-[8px] text-primary">●</span>
-                  </span>
-                ))}
-              </div>
-            ))}
-          </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
           <div className="pointer-events-none absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-background/80 to-transparent" />
           <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background/80 to-transparent" />
         </div>
