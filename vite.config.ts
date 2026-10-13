@@ -44,6 +44,15 @@ export default defineConfig({
     viteReact(),
     // Compiles the server into the deploy output. No preset: Nitro detects the
     // target from the environment — Vercel Functions on Vercel, node-server locally.
-    nitro(),
+    nitro({
+      vercel: {
+        config: {
+          version: 3,
+          // Uma vez por dia, 9h de Brasília: impede que o Supabase do TPM
+          // (plano gratuito) pause por 7 dias sem uso. Ver api/tpm.manter-ativo.ts.
+          crons: [{ path: "/api/tpm/manter-ativo", schedule: "0 12 * * *" }],
+        },
+      },
+    }),
   ],
 });

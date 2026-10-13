@@ -28,6 +28,7 @@ import { Route as AuthenticatedTpmNovoRouteImport } from './routes/_authenticate
 import { Route as ApiTpmCasesRouteImport } from './routes/api/tpm.cases'
 import { Route as ApiTpmFeedbackRouteImport } from './routes/api/tpm.feedback'
 import { Route as ApiTpmGenerateRouteImport } from './routes/api/tpm.generate'
+import { Route as ApiTpmManterAtivoRouteImport } from './routes/api/tpm.manter-ativo'
 import { Route as ApiTpmMatchSectorRouteImport } from './routes/api/tpm.match-sector'
 import { Route as ApiTpmParseAgendaRouteImport } from './routes/api/tpm.parse-agenda'
 import { Route as ApiTpmReportsRouteImport } from './routes/api/tpm.reports'
@@ -129,6 +130,11 @@ const ApiTpmGenerateRoute = ApiTpmGenerateRouteImport.update({
   path: '/api/tpm/generate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTpmManterAtivoRoute = ApiTpmManterAtivoRouteImport.update({
+  id: '/api/tpm/manter-ativo',
+  path: '/api/tpm/manter-ativo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTpmMatchSectorRoute = ApiTpmMatchSectorRouteImport.update({
   id: '/api/tpm/match-sector',
   path: '/api/tpm/match-sector',
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/api/tpm/cases': typeof ApiTpmCasesRoute
   '/api/tpm/feedback': typeof ApiTpmFeedbackRoute
   '/api/tpm/generate': typeof ApiTpmGenerateRoute
+  '/api/tpm/manter-ativo': typeof ApiTpmManterAtivoRoute
   '/api/tpm/match-sector': typeof ApiTpmMatchSectorRoute
   '/api/tpm/parse-agenda': typeof ApiTpmParseAgendaRoute
   '/api/tpm/reports': typeof ApiTpmReportsRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/api/tpm/cases': typeof ApiTpmCasesRoute
   '/api/tpm/feedback': typeof ApiTpmFeedbackRoute
   '/api/tpm/generate': typeof ApiTpmGenerateRoute
+  '/api/tpm/manter-ativo': typeof ApiTpmManterAtivoRoute
   '/api/tpm/match-sector': typeof ApiTpmMatchSectorRoute
   '/api/tpm/parse-agenda': typeof ApiTpmParseAgendaRoute
   '/api/tpm/reports': typeof ApiTpmReportsRoute
@@ -225,6 +233,7 @@ export interface FileRoutesById {
   '/api/tpm/cases': typeof ApiTpmCasesRoute
   '/api/tpm/feedback': typeof ApiTpmFeedbackRoute
   '/api/tpm/generate': typeof ApiTpmGenerateRoute
+  '/api/tpm/manter-ativo': typeof ApiTpmManterAtivoRoute
   '/api/tpm/match-sector': typeof ApiTpmMatchSectorRoute
   '/api/tpm/parse-agenda': typeof ApiTpmParseAgendaRoute
   '/api/tpm/reports': typeof ApiTpmReportsRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/api/tpm/cases'
     | '/api/tpm/feedback'
     | '/api/tpm/generate'
+    | '/api/tpm/manter-ativo'
     | '/api/tpm/match-sector'
     | '/api/tpm/parse-agenda'
     | '/api/tpm/reports'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/api/tpm/cases'
     | '/api/tpm/feedback'
     | '/api/tpm/generate'
+    | '/api/tpm/manter-ativo'
     | '/api/tpm/match-sector'
     | '/api/tpm/parse-agenda'
     | '/api/tpm/reports'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/api/tpm/cases'
     | '/api/tpm/feedback'
     | '/api/tpm/generate'
+    | '/api/tpm/manter-ativo'
     | '/api/tpm/match-sector'
     | '/api/tpm/parse-agenda'
     | '/api/tpm/reports'
@@ -323,6 +335,7 @@ export interface RootRouteChildren {
   ApiTpmCasesRoute: typeof ApiTpmCasesRoute
   ApiTpmFeedbackRoute: typeof ApiTpmFeedbackRoute
   ApiTpmGenerateRoute: typeof ApiTpmGenerateRoute
+  ApiTpmManterAtivoRoute: typeof ApiTpmManterAtivoRoute
   ApiTpmMatchSectorRoute: typeof ApiTpmMatchSectorRoute
   ApiTpmParseAgendaRoute: typeof ApiTpmParseAgendaRoute
   ApiTpmReportsRoute: typeof ApiTpmReportsRoute
@@ -465,6 +478,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTpmGenerateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tpm/manter-ativo': {
+      id: '/api/tpm/manter-ativo'
+      path: '/api/tpm/manter-ativo'
+      fullPath: '/api/tpm/manter-ativo'
+      preLoaderRoute: typeof ApiTpmManterAtivoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/tpm/match-sector': {
       id: '/api/tpm/match-sector'
       path: '/api/tpm/match-sector'
@@ -541,6 +561,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTpmCasesRoute: ApiTpmCasesRoute,
   ApiTpmFeedbackRoute: ApiTpmFeedbackRoute,
   ApiTpmGenerateRoute: ApiTpmGenerateRoute,
+  ApiTpmManterAtivoRoute: ApiTpmManterAtivoRoute,
   ApiTpmMatchSectorRoute: ApiTpmMatchSectorRoute,
   ApiTpmParseAgendaRoute: ApiTpmParseAgendaRoute,
   ApiTpmReportsRoute: ApiTpmReportsRoute,
