@@ -9,7 +9,7 @@
 
 import type { ReactNode } from "react";
 
-export type PreviewId = "cv" | "nps" | "tpm" | "apresentacoes";
+export type PreviewId = "cv" | "nps" | "tpm" | "apresentacoes" | "board";
 
 export function AppPreview({ id }: { id: PreviewId }) {
   return (
@@ -18,6 +18,7 @@ export function AppPreview({ id }: { id: PreviewId }) {
       {id === "nps" && <Nps />}
       {id === "tpm" && <Briefing />}
       {id === "apresentacoes" && <Slides />}
+      {id === "board" && <Board />}
     </MolduraPreview>
   );
 }
@@ -152,6 +153,49 @@ function Slides() {
           <Linha w="90%" />
           <Linha w="70%" />
           <Linha w="80%" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Painel de gestão de vagas: números no topo e a divisão por área. */
+function Board() {
+  const numeros = ["137", "41", "73"];
+  return (
+    <div className="w-[180px] rounded-lg bg-white shadow-xl p-2.5">
+      <div className="grid grid-cols-3 gap-1.5">
+        {numeros.map((n, i) => (
+          <div
+            key={n}
+            className={`rounded-md border-t-2 bg-neutral-50 px-1.5 py-1 ${
+              i === 2 ? "border-primary" : "border-neutral-300"
+            }`}
+          >
+            <div className="text-[11px] font-black leading-none text-neutral-900">{n}</div>
+            <div className="mt-1 h-1 w-3/4 rounded-full bg-neutral-200" />
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 flex items-center gap-2.5">
+        <div
+          className="h-11 w-11 shrink-0 rounded-full"
+          style={{
+            background:
+              "conic-gradient(oklch(0.58 0.22 25) 0 55%, #262626 55% 75%, #a3a3a3 75% 90%, #d4d4d4 90% 100%)",
+            mask: "radial-gradient(circle, transparent 42%, black 43%)",
+            WebkitMask: "radial-gradient(circle, transparent 42%, black 43%)",
+          }}
+        />
+        <div className="flex-1 space-y-1.5">
+          {[90, 60, 40].map((w, i) => (
+            <div key={i} className="h-1.5 rounded-full bg-neutral-100 overflow-hidden">
+              <div
+                className={`h-full rounded-full ${i === 0 ? "bg-primary" : "bg-neutral-400"}`}
+                style={{ width: `${w}%` }}
+              />
+            </div>
+          ))}
         </div>
       </div>
     </div>

@@ -1,5 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Lock } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
 import logo from "@/assets/tailor-logo.png";
 import { AppPreview, type PreviewId } from "@/components/hub/AppPreview";
 import { AvisosFaixa } from "@/components/hub/AvisosFaixa";
@@ -20,8 +19,8 @@ type AppTile = {
   /** Curto de propósito: o título do card cabe numa linha só. */
   name: string;
   description: string;
-  target: string;
-  available: boolean;
+  /** Rota do hub ("/tpm") ou endereço de fora (TailorBoard). */
+  href: string;
 };
 
 const APPS: AppTile[] = [
@@ -29,43 +28,36 @@ const APPS: AppTile[] = [
     id: "cv",
     name: "Gerador de Currículo",
     description: "Crie currículos no padrão Tailor a partir dos seus dados.",
-    target: "/generator",
-    available: true,
+    href: "/generator",
   },
   {
     id: "apresentacoes",
     name: "Apresentações 2026",
     description:
       "Comercial, propostas, kickoff, status e shortlist: os modelos padrão da Tailor no Canva.",
-    target: "/apresentacoes",
-    available: true,
+    href: "/apresentacoes",
   },
   {
     id: "tpm",
     name: "TPM Pré-Reunião",
     description: "Briefing estratégico antes da reunião, com pesquisa e cases Tailor.",
-    target: "/tpm",
-    available: true,
+    href: "/tpm",
   },
   {
     id: "nps",
     name: "NPS",
     description: "Dashboard e formulário de pesquisa de experiência (NPS).",
-    target: "/nps",
-    available: true,
+    href: "/nps",
+  },
+  {
+    id: "board",
+    name: "TailorBoard",
+    description: "Dashboard de gestão de vagas: posições, placements, backouts e metas.",
+    href: "https://tailorboard.tailorexec.com.br",
   },
 ];
 
 function HubPage() {
-  const navigate = useNavigate();
-
-  // A página só abre logado e aprovado (ver _authenticated.tsx), então o
-  // clique vai direto para o app.
-  const handleClick = (app: AppTile) => {
-    if (!app.available) return;
-    navigate({ to: app.target });
-  };
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="w-full border-b border-border bg-card">
@@ -90,13 +82,16 @@ function HubPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 content-start">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 content-start">
             {APPS.map((app) => (
-              <button
+              // Todo card abre em nova aba, de propósito: o hub fica aberto
+              // como ponto de partida. A sessão vale na aba nova também.
+              <a
                 key={app.id}
-                onClick={() => handleClick(app)}
-                disabled={!app.available}
-                className="group relative overflow-hidden rounded-2xl border border-border bg-card text-left transition-all hover:border-primary hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed flex flex-col"
+                href={app.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative overflow-hidden rounded-2xl border border-border bg-card text-left transition-all hover:border-primary hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex flex-col"
               >
                 <AppPreview id={app.id} />
                 <div className="p-4">
@@ -110,12 +105,7 @@ function HubPage() {
                     {app.description}
                   </p>
                 </div>
-                {!app.available && (
-                  <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-white">
-                    <Lock className="w-3 h-3" /> Em breve
-                  </span>
-                )}
-              </button>
+              </a>
             ))}
           </div>
 
