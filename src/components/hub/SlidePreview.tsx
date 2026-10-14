@@ -8,12 +8,14 @@ import type { ReactNode } from "react";
 
 import { Linha } from "./AppPreview";
 
-export type SlideId = "comercial" | "kickoff" | "status" | "shortlist";
+export type SlideId = "comercial" | "mapping" | "executive" | "kickoff" | "status" | "shortlist";
 
 export function SlidePreview({ id }: { id: SlideId }) {
   return (
     <Slide>
       {id === "comercial" && <Comercial />}
+      {id === "mapping" && <Mapping />}
+      {id === "executive" && <PropostaExecutive />}
       {id === "kickoff" && <Kickoff />}
       {id === "status" && <Status />}
       {id === "shortlist" && <Shortlist />}
@@ -129,6 +131,74 @@ function Shortlist() {
             <div className={`h-5 w-5 rounded-full ${i === 0 ? "bg-primary" : "bg-neutral-300"}`} />
             <Linha w="90%" className="bg-neutral-300" />
             <Linha w="65%" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Mapa de mercado: empresas espalhadas, as do alvo em destaque. */
+function Mapping() {
+  // Posições fixas (em %): um desenho, não dados.
+  const pontos = [
+    [18, 30, 1],
+    [34, 55, 0],
+    [52, 28, 1],
+    [70, 62, 0],
+    [84, 34, 0],
+    [26, 76, 0],
+    [61, 82, 1],
+    [44, 70, 0],
+    [76, 18, 0],
+    [12, 58, 0],
+  ] as const;
+  return (
+    <div className="p-3 h-full flex flex-col">
+      <div className="flex items-center justify-between">
+        <div className="h-2 w-2/5 rounded-sm bg-neutral-800" />
+        <span className="rounded bg-neutral-100 px-1 text-[7px] font-bold text-neutral-500">
+          PROPOSAL
+        </span>
+      </div>
+      <div className="relative mt-2 flex-1 rounded border border-neutral-200">
+        <div className="absolute inset-y-0 left-1/2 w-px bg-neutral-200" />
+        <div className="absolute inset-x-0 top-1/2 h-px bg-neutral-200" />
+        {pontos.map(([x, y, alvo], i) => (
+          <div
+            key={i}
+            className={`absolute rounded-full -translate-x-1/2 -translate-y-1/2 ${
+              alvo ? "h-2.5 w-2.5 bg-primary" : "h-2 w-2 bg-neutral-300"
+            }`}
+            style={{ left: `${x}%`, top: `${y}%` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Proposta de busca: texto, tabela de honorários e assinatura. */
+function PropostaExecutive() {
+  return (
+    <div className="p-3 h-full flex flex-col">
+      <div className="flex items-center justify-between">
+        <div className="h-2 w-2/5 rounded-sm bg-neutral-800" />
+        <span className="rounded bg-neutral-100 px-1 text-[7px] font-bold text-neutral-500">
+          PROPOSAL
+        </span>
+      </div>
+      <div className="mt-2 space-y-1">
+        <Linha w="95%" />
+        <Linha w="80%" />
+      </div>
+      <div className="mt-auto rounded border border-neutral-200 divide-y divide-neutral-200">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="flex items-center justify-between px-1.5 py-1">
+            <Linha w="45%" className="bg-neutral-300" />
+            <div
+              className={`h-1.5 w-6 rounded-full ${i === 2 ? "bg-primary" : "bg-neutral-300"}`}
+            />
           </div>
         ))}
       </div>

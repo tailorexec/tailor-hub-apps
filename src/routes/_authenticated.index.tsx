@@ -35,7 +35,8 @@ const APPS: AppTile[] = [
   {
     id: "apresentacoes",
     name: "Apresentações 2026",
-    description: "Comercial, kickoff, status e shortlist: os modelos padrão da Tailor no Canva.",
+    description:
+      "Comercial, propostas, kickoff, status e shortlist: os modelos padrão da Tailor no Canva.",
     target: "/apresentacoes",
     available: true,
   },

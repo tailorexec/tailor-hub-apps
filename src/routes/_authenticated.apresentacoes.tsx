@@ -25,6 +25,18 @@ const APRESENTACOES: { id: SlideId; nome: string; descricao: string; url: string
     url: "https://canva.link/apresentacao-comercial-tailor-2026",
   },
   {
+    id: "mapping",
+    nome: "Proposta Market Mapping",
+    descricao: "Technical and Commercial Proposal para projetos de mapeamento de mercado.",
+    url: "https://canva.link/o8xwontddel09ep",
+  },
+  {
+    id: "executive",
+    nome: "Proposta Executive Search",
+    descricao: "Technical and Commercial Proposal para projetos de busca de executivos.",
+    url: "https://canva.link/af4h1hgnm0wa51p",
+  },
+  {
     id: "kickoff",
     nome: "Kickoff",
     descricao: "Para abrir o projeto com o cliente: escopo, perfil da posição e cronograma.",
@@ -105,7 +117,7 @@ function ApresentacoesPage() {
           </p>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {APRESENTACOES.map(({ id, nome, descricao, url }) => (
             <a
               key={id}
