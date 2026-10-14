@@ -26,13 +26,13 @@ const APRESENTACOES: { id: SlideId; nome: string; descricao: string; url: string
   },
   {
     id: "mapping",
-    nome: "Proposta Market Mapping",
+    nome: "Proposta Market Mapping (em inglês)",
     descricao: "Technical and Commercial Proposal para projetos de mapeamento de mercado.",
     url: "https://canva.link/o8xwontddel09ep",
   },
   {
     id: "executive",
-    nome: "Proposta Executive Search",
+    nome: "Proposta Executive Search (em inglês)",
     descricao: "Technical and Commercial Proposal para projetos de busca de executivos.",
     url: "https://canva.link/af4h1hgnm0wa51p",
   },
